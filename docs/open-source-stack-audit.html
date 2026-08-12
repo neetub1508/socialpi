@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Verified licence audit of 26 open-source projects plus a reference architecture for a multi-tenant agentic SaaS platform.">
+<title>Licence-Clean Stack for a Multi-Tenant Agentic Platform</title>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --paper:#F5F7F9;
+    --card:#FFFFFF;
+    --card-2:#EDF1F5;
+    --ink:#131A22;
+    --ink-2:#46525F;
+    --ink-3:#6E7B88;
+    --rule:#D9E1E8;
+    --rule-strong:#B9C5D0;
+    --accent:#2C3EA8;
+    --accent-soft:#E6E9F7;
+    --ok:#1B6E46;
+    --ok-soft:#E2F0E8;
+    --warn:#8A5A0C;
+    --warn-soft:#F6EDDC;
+    --bad:#9C2F29;
+    --bad-soft:#F7E6E4;
+
+    --font-display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --font-body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:#0F141A;
+      --card:#161D25;
+      --card-2:#1D262F;
+      --ink:#E8EDF2;
+      --ink-2:#A5B2BF;
+      --ink-3:#7A8792;
+      --rule:#28323D;
+      --rule-strong:#3A4753;
+      --accent:#8C9BFF;
+      --accent-soft:#1C2440;
+      --ok:#4FC98A;
+      --ok-soft:#14291F;
+      --warn:#E0A93F;
+      --warn-soft:#2B2314;
+      --bad:#F0776E;
+      --bad-soft:#2E1917;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:#0F141A;
+    --card:#161D25;
+    --card-2:#1D262F;
+    --ink:#E8EDF2;
+    --ink-2:#A5B2BF;
+    --ink-3:#7A8792;
+    --rule:#28323D;
+    --rule-strong:#3A4753;
+    --accent:#8C9BFF;
+    --accent-soft:#1C2440;
+    --ok:#4FC98A;
+    --ok-soft:#14291F;
+    --warn:#E0A93F;
+    --warn-soft:#2B2314;
+    --bad:#F0776E;
+    --bad-soft:#2E1917;
+  }
+
+  :root[data-theme="light"] {
+    --paper:#F5F7F9;
+    --card:#FFFFFF;
+    --card-2:#EDF1F5;
+    --ink:#131A22;
+    --ink-2:#46525F;
+    --ink-3:#6E7B88;
+    --rule:#D9E1E8;
+    --rule-strong:#B9C5D0;
+    --accent:#2C3EA8;
+    --accent-soft:#E6E9F7;
+    --ok:#1B6E46;
+    --ok-soft:#E2F0E8;
+    --warn:#8A5A0C;
+    --warn-soft:#F6EDDC;
+    --bad:#9C2F29;
+    --bad-soft:#F7E6E4;
+  }
+
+  html { background:var(--paper); }
+
+  body {
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.6;
+    margin:0;
+    padding:0 24px 96px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap { max-width:1080px; margin:0 auto; }
+  .prose { max-width:68ch; }
+
+  /* ---- masthead ---- */
+  .masthead {
+    border-bottom:2px solid var(--ink);
+    padding:56px 0 20px;
+    margin-bottom:40px;
+  }
+  .kicker {
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 14px;
+  }
+  .masthead h1 {
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(30px,4.6vw,50px);
+    line-height:1.08;
+    letter-spacing:-.015em;
+    margin:0 0 16px;
+    text-wrap:balance;
+  }
+  .standfirst {
+    font-size:18px;
+    line-height:1.55;
+    color:var(--ink-2);
+    max-width:60ch;
+    margin:0;
+  }
+  .meta {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 28px;
+    margin-top:26px;
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    letter-spacing:.05em;
+    color:var(--ink-3);
+    text-transform:uppercase;
+  }
+
+  /* ---- sections ---- */
+  section { margin:0 0 60px; }
+  .eyebrow {
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ink-3);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+    margin:0 0 22px;
+  }
+  h2 {
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(23px,2.7vw,31px);
+    line-height:1.2;
+    letter-spacing:-.01em;
+    margin:0 0 16px;
+    text-wrap:balance;
+  }
+  h3 {
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:19px;
+    line-height:1.3;
+    margin:34px 0 10px;
+  }
+  p { margin:0 0 16px; }
+  a { color:var(--accent); text-underline-offset:2px; }
+  a:focus-visible, .card:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  strong { font-weight:650; }
+  code {
+    font-family:var(--font-mono);
+    font-size:.88em;
+    background:var(--card-2);
+    padding:1px 5px;
+    border-radius:3px;
+  }
+
+  /* ---- verdict callout ---- */
+  .verdict {
+    background:var(--card);
+    border:1px solid var(--rule);
+    border-left:4px solid var(--accent);
+    padding:24px 28px;
+    margin:0 0 28px;
+  }
+  .verdict h2 { margin-bottom:10px; }
+  .verdict p:last-child { margin-bottom:0; }
+
+  /* ---- tables ---- */
+  .scroller { overflow-x:auto; margin:0 0 12px; }
+  table {
+    border-collapse:collapse;
+    width:100%;
+    min-width:760px;
+    font-size:14.5px;
+  }
+  thead th {
+    text-align:left;
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-3);
+    font-weight:500;
+    padding:0 14px 9px;
+    border-bottom:1px solid var(--rule-strong);
+    white-space:nowrap;
+  }
+  tbody td {
+    padding:11px 14px;
+    border-bottom:1px solid var(--rule);
+    vertical-align:top;
+  }
+  tbody tr:hover { background:var(--card); }
+  td.layer { color:var(--ink-2); white-space:nowrap; }
+  td.proj { font-weight:600; white-space:nowrap; }
+  td.lic { font-family:var(--font-mono); font-size:12.5px; }
+  td.note { color:var(--ink-2); font-size:13.5px; line-height:1.5; }
+
+  /* status stripe on first cell */
+  .st { border-left:3px solid transparent; padding-left:11px; }
+  .st-ok { border-left-color:var(--ok); }
+  .st-warn { border-left-color:var(--warn); }
+  .st-bad { border-left-color:var(--bad); }
+
+  .pill {
+    display:inline-block;
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    padding:2px 8px;
+    border-radius:2px;
+    white-space:nowrap;
+  }
+  .p-ok { background:var(--ok-soft); color:var(--ok); }
+  .p-warn { background:var(--warn-soft); color:var(--warn); }
+  .p-bad { background:var(--bad-soft); color:var(--bad); }
+  .p-acc { background:var(--accent-soft); color:var(--accent); }
+
+  .tcap {
+    font-size:13px;
+    color:var(--ink-3);
+    margin:0 0 34px;
+    max-width:70ch;
+  }
+
+  /* ---- figures ---- */
+  figure {
+    margin:0 0 14px;
+    background:var(--card);
+    border:1px solid var(--rule);
+    padding:26px 22px 18px;
+  }
+  .figscroll { overflow-x:auto; }
+  figure svg { display:block; width:100%; min-width:640px; height:auto; color:var(--ink); }
+  figcaption {
+    margin-top:18px;
+    padding-top:14px;
+    border-top:1px solid var(--rule);
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--ink-2);
+  }
+  .dgm-box { fill:var(--card-2); stroke:var(--rule-strong); stroke-width:1.25; }
+  .dgm-box-acc { fill:var(--accent-soft); stroke:var(--accent); stroke-width:1.75; }
+  .dgm-t { font-family:var(--font-body); font-size:13px; font-weight:600; fill:var(--ink); }
+  .dgm-s { font-family:var(--font-mono); font-size:10.5px; fill:var(--ink-3); letter-spacing:.02em; }
+  .dgm-a { font-family:var(--font-mono); font-size:10px; fill:var(--ink-2); letter-spacing:.04em; }
+  .dgm-acc-t { fill:var(--accent); }
+  .dgm-line { stroke:var(--ink-2); stroke-width:1.4; fill:none; }
+  .dgm-line-acc { stroke:var(--accent); stroke-width:1.9; fill:none; }
+  .dgm-dash { stroke:var(--ink-3); stroke-width:1.2; stroke-dasharray:4 4; fill:none; }
+
+  /* ---- lists & cards ---- */
+  ul, ol { margin:0 0 16px; padding-left:22px; }
+  li { margin-bottom:8px; }
+  li::marker { color:var(--ink-3); }
+
+  .cards {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:14px;
+    margin:22px 0 8px;
+  }
+  .card {
+    background:var(--card);
+    border:1px solid var(--rule);
+    padding:18px 20px;
+  }
+  .card h4 {
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink-3);
+    margin:0 0 10px;
+    font-weight:500;
+  }
+  .card p { font-size:14px; line-height:1.5; margin:0; color:var(--ink-2); }
+  .card .big {
+    font-family:var(--font-display);
+    font-size:26px;
+    color:var(--ink);
+    line-height:1.15;
+    margin:0 0 6px;
+    font-weight:600;
+  }
+
+  .foot {
+    border-top:2px solid var(--ink);
+    margin-top:56px;
+    padding-top:20px;
+    font-size:13.5px;
+    color:var(--ink-3);
+    max-width:72ch;
+  }
+
+  @media (max-width:640px) {
+    body { padding:0 16px 64px; }
+    .masthead { padding-top:36px; }
+  }
+
+  @media print {
+    body { background:#fff; color:#000; padding:0; }
+    figure, .card, .verdict { break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">SocialPi &middot; Licence audit &amp; reference architecture</p>
+    <h1>A licence-clean stack for a multi-tenant agentic platform</h1>
+    <p class="standfirst">Every component below was verified by reading its <code>LICENSE</code> file at HEAD, not by trusting comparison articles. Three popular candidates were disqualified. One layer has no clean open-source option at all &mdash; and that layer turns out to be the one worth owning.</p>
+    <div class="meta">
+      <span>Verified 12 Aug 2026</span>
+      <span>Model: multi-tenant paid SaaS</span>
+      <span>26 projects checked</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="verdict">
+      <h2>The one-line verdict</h2>
+      <p class="prose">A complete stack exists under MIT / Apache-2.0 / BSD with no restrictions on reselling as a hosted multi-tenant service &mdash; <strong>except for the third-party OAuth and social-publishing layer</strong>, where every serious option is either licence-blocked, copyleft, or a closed-source vendor cloud. Build that one service yourself on <code>Arctic</code> (MIT). It is roughly four OAuth integrations, and it is the part of the product a competitor cannot trivially copy.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Why this audit exists</p>
+    <h2>Blog posts are a dangerous source for licence facts</h2>
+    <div class="prose">
+      <p>Kortix (formerly Suna) is described as Apache-2.0 across essentially the entire first page of search results. Its actual <code>LICENSE</code> file tells a different story:</p>
+      <ul>
+        <li>Apache-2.0 from Oct 2024 until <strong>3 Dec 2025</strong></li>
+        <li>Relicensed to the bespoke <strong>Kortix Public Source License</strong>, which bans SaaS, rebranding and commercialisation by name</li>
+        <li>Replaced again on <strong>18 Feb 2026</strong> with <strong>Elastic License 2.0</strong> &mdash; commit <code>a79ce3f</code>, message: <em>&ldquo;LICENSE: ELv2 (was already replaced, now committed)&rdquo;</em></li>
+      </ul>
+      <p>Two relicensings in eleven weeks, both closing off hosted resale. Every project below was therefore checked at source, and the same check should be repeated before you ship, because any of these can change under you the same way.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Cleared &mdash; build on these</p>
+    <h2>Verified permissive, no hosted-service restriction</h2>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr>
+            <th>Layer</th><th>Project</th><th>Licence</th><th>Status</th><th>What to watch</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="layer st st-ok">Web app</td>
+            <td class="proj">Next.js</td>
+            <td class="lic">MIT</td>
+            <td><span class="pill p-ok">Clear</span></td>
+            <td class="note">Stable licence since inception.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">Chat UI</td>
+            <td class="proj">assistant-ui</td>
+            <td class="lic">MIT</td>
+            <td><span class="pill p-ok">Clear</span></td>
+            <td class="note">Streaming chat, tool-call rendering, generative UI. Saves weeks.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">Agent runtime</td>
+            <td class="proj">Mastra</td>
+            <td class="lic">Apache-2.0</td>
+            <td><span class="pill p-warn">ee/ carve-out</span></td>
+            <td class="note">Core is clean Apache-2.0. Anything under <code>ee/</code> is proprietary &mdash; do not deploy that directory.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">LLM abstraction</td>
+            <td class="proj">Vercel AI SDK</td>
+            <td class="lic">Apache-2.0</td>
+            <td><span class="pill p-ok">Clear</span></td>
+            <td class="note">The SDK is free and open. Only the AI Gateway is a paid Vercel service &mdash; replaced here by LiteLLM.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">Model gateway</td>
+            <td class="proj">LiteLLM</td>
+            <td class="lic">MIT</td>
+            <td><span class="pill p-warn">enterprise/ carve-out</span></td>
+            <td class="note">MIT core; the <code>enterprise/</code> directory is separately licensed. Per-tenant keys, budgets, spend tracking all sit in the free core.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">Auth &amp; tenancy</td>
+            <td class="proj">Better Auth</td>
+            <td class="lic">MIT</td>
+            <td><span class="pill p-ok">Clear</span></td>
+            <td class="note">Organisations plugin gives you tenants, invites and roles out of the box.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">OAuth clients</td>
+            <td class="proj">Arctic</td>
+            <td class="lic">MIT</td>
+            <td><span class="pill p-acc">Key piece</span></td>
+            <td class="note">Typed OAuth 2.0 clients for the major providers. This is what you build your connector service on.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">Durable jobs</td>
+            <td class="proj">Trigger.dev</td>
+            <td class="lic">Apache-2.0</td>
+            <td><span class="pill p-ok">Clear</span></td>
+            <td class="note">Non-negotiable: agent runs and video uploads exceed serverless timeouts. Temporal (MIT) is the heavier alternative.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">Sandbox</td>
+            <td class="proj">E2B</td>
+            <td class="lic">Apache-2.0</td>
+            <td><span class="pill p-ok">Clear</span></td>
+            <td class="note">Never run agent-generated code in your API process.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">Browser control</td>
+            <td class="proj">browser-use</td>
+            <td class="lic">MIT</td>
+            <td><span class="pill p-ok">Clear</span></td>
+            <td class="note">For sites with no usable API. Run it inside the sandbox, never on the host.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">Observability</td>
+            <td class="proj">Langfuse</td>
+            <td class="lic">MIT</td>
+            <td><span class="pill p-warn">ee/ carve-out</span></td>
+            <td class="note">MIT core; <code>ee/</code>, <code>web/src/ee/</code> and <code>worker/src/ee/</code> are proprietary. Cost-per-tenant attribution is in the free core.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">Usage metering</td>
+            <td class="proj">OpenMeter</td>
+            <td class="lic">Apache-2.0</td>
+            <td><span class="pill p-ok">Clear</span></td>
+            <td class="note">Meters token spend into Stripe. Choose this over Lago, which is AGPL-3.0.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">Database</td>
+            <td class="proj">PostgreSQL</td>
+            <td class="lic">PostgreSQL</td>
+            <td><span class="pill p-ok">Clear</span></td>
+            <td class="note">BSD-style. Row-level security is your tenant isolation boundary.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">Cache &amp; queue</td>
+            <td class="proj">Valkey</td>
+            <td class="lic">BSD-3-Clause</td>
+            <td><span class="pill p-ok">Clear</span></td>
+            <td class="note">Use instead of Redis, which moved to RSAL/SSPL. Drop-in compatible.</td>
+          </tr>
+          <tr>
+            <td class="layer st st-ok">Workflow builder</td>
+            <td class="proj">Sim</td>
+            <td class="lic">Apache-2.0</td>
+            <td><span class="pill p-ok">Optional</span></td>
+            <td class="note">Only if you want a visual canvas for users. Adds surface area; skip for v1.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tcap">The three <span class="pill p-warn">carve-out</span> projects are still safe to build on &mdash; but their proprietary directories must be excluded from your Docker images, and a dependency audit should assert they never get pulled in.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Blocked &mdash; do not build on these</p>
+    <h2>Disqualified for a paid multi-tenant service</h2>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Project</th><th>Licence</th><th>Blocking clause</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="proj st st-bad">Kortix / Suna</td>
+            <td class="lic">Elastic v2</td>
+            <td class="note">&ldquo;You may not provide the software to third parties as a hosted or managed service&hellip;&rdquo; Was Apache-2.0 until Dec 2025; forking that commit strands you on an abandoned Python architecture with no upstream path.</td>
+          </tr>
+          <tr>
+            <td class="proj st st-bad">Nango</td>
+            <td class="lic">Elastic v2</td>
+            <td class="note">Identical hosted-service ban. This is the one that would have solved your OAuth layer &mdash; hence the gap below.</td>
+          </tr>
+          <tr>
+            <td class="proj st st-bad">Dify</td>
+            <td class="lic">Apache + conditions</td>
+            <td class="note">&ldquo;You may not use the Dify source code to operate a multi-tenant environment&rdquo; without written authorisation.</td>
+          </tr>
+          <tr>
+            <td class="proj st st-bad">n8n</td>
+            <td class="lic">Sustainable Use</td>
+            <td class="note">Internal business use only. Hosting it for paying users requires a negotiated commercial Embed licence.</td>
+          </tr>
+          <tr>
+            <td class="proj st st-bad">Postiz</td>
+            <td class="lic">AGPL-3.0</td>
+            <td class="note">Network copyleft: serving it over a network obliges you to release your modified source to those users.</td>
+          </tr>
+          <tr>
+            <td class="proj st st-bad">Lago &middot; MinIO</td>
+            <td class="lic">AGPL-3.0</td>
+            <td class="note">Same trigger. Use OpenMeter, and S3/R2 or SeaweedFS instead.</td>
+          </tr>
+          <tr>
+            <td class="proj st st-bad">ComfyUI</td>
+            <td class="lic">GPL-3.0</td>
+            <td class="note">Viral if embedded. Call hosted image APIs instead; don&rsquo;t self-host generation for v1.</td>
+          </tr>
+          <tr>
+            <td class="proj st st-bad">Redis</td>
+            <td class="lic">RSALv2 / SSPL</td>
+            <td class="note">Managed-service restrictions since 2024. Valkey is the BSD fork.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tcap">On AGPL specifically: reasonable lawyers disagree about where the boundary falls when you merely deploy an unmodified AGPL service alongside your own. That ambiguity is itself the reason to avoid it &mdash; you do not want an unresolved licence question surfacing in an acquisition or enterprise-security review.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Conditional</p>
+    <h2>Legal to use, but not what they appear to be</h2>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Project</th><th>Licence</th><th>The catch</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="proj st st-warn">Composio</td>
+            <td class="lic">MIT (SDK only)</td>
+            <td class="note">The SDK is genuinely MIT, but the backend that stores your customers&rsquo; OAuth tokens and executes tool calls is closed-source and runs on Composio&rsquo;s cloud. Self-hosting is an enterprise sales conversation. This is a vendor dependency wearing an open-source badge &mdash; your customers&rsquo; tokens leave your infrastructure.</td>
+          </tr>
+          <tr>
+            <td class="proj st st-warn">Mixpost</td>
+            <td class="lic">MIT (Lite) + paid Pro</td>
+            <td class="note">Lite is MIT but covers only X and Facebook and ships <em>no API</em>. The API, eleven networks and basic white-label are Pro &mdash; $299 one-time, $1,199 enterprise. A cheap, honest commercial licence; just not open source.</td>
+          </tr>
+          <tr>
+            <td class="proj st st-warn">Activepieces</td>
+            <td class="lic">MIT + proprietary ee/</td>
+            <td class="note">MIT core, but <code>packages/ee/</code> and <code>packages/server/api/src/app/ee</code> hold exactly the features you need &mdash; multi-tenancy and white-label.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tcap">Stripe, Anthropic, OpenAI, Google, Replicate and your cloud provider are ordinary paid vendors. Their terms of service matter operationally, but they raise no source-licence question &mdash; you are calling an API, not redistributing software.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Architecture</p>
+    <h2>How the cleared components fit together</h2>
+    <p class="prose">One request path, three branches off the agent runtime. The only box you write from scratch is highlighted.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 980 510" role="img" aria-label="Architecture diagram: browser to Better Auth to Mastra agent runtime, which branches to LiteLLM gateway for model calls, Trigger.dev for durable jobs into an E2B sandbox, and a self-built connector service holding per-tenant OAuth tokens that publishes to X, YouTube and Instagram. A data plane and a control plane sit either side of the runtime.">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <rect class="dgm-box" x="340" y="18" width="300" height="52" rx="2"/>
+          <text class="dgm-t" x="490" y="41" text-anchor="middle">Tenant browser</text>
+          <text class="dgm-s" x="490" y="58" text-anchor="middle">Next.js &middot; assistant-ui</text>
+
+          <g style="color:var(--ink-2)">
+            <line class="dgm-line" x1="490" y1="70" x2="490" y2="94" marker-end="url(#ar)"/>
+          </g>
+
+          <rect class="dgm-box" x="340" y="96" width="300" height="52" rx="2"/>
+          <text class="dgm-t" x="490" y="119" text-anchor="middle">Better Auth</text>
+          <text class="dgm-s" x="490" y="136" text-anchor="middle">org &middot; tenant &middot; session &middot; RBAC</text>
+
+          <g style="color:var(--ink-2)">
+            <line class="dgm-line" x1="490" y1="148" x2="490" y2="172" marker-end="url(#ar)"/>
+          </g>
+
+          <rect class="dgm-box" x="320" y="174" width="340" height="60" rx="2"/>
+          <text class="dgm-t" x="490" y="199" text-anchor="middle">Mastra agent runtime</text>
+          <text class="dgm-s" x="490" y="217" text-anchor="middle">planning &middot; tool loop &middot; memory</text>
+
+          <rect class="dgm-box" x="28" y="112" width="250" height="86" rx="2"/>
+          <text class="dgm-s" x="42" y="132">DATA PLANE</text>
+          <text class="dgm-t" x="42" y="153">PostgreSQL &middot; Valkey</text>
+          <text class="dgm-s" x="42" y="172">row-level tenant isolation</text>
+          <text class="dgm-s" x="42" y="188">S3-compatible media store</text>
+          <g style="color:var(--ink-3)">
+            <path class="dgm-dash" d="M 320 204 L 296 204 L 296 168" marker-end="url(#ar)"/>
+          </g>
+
+          <rect class="dgm-box" x="702" y="112" width="250" height="86" rx="2"/>
+          <text class="dgm-s" x="716" y="132">CONTROL PLANE</text>
+          <text class="dgm-t" x="716" y="153">Langfuse &middot; OpenMeter</text>
+          <text class="dgm-s" x="716" y="172">trace + token cost per run</text>
+          <text class="dgm-s" x="716" y="188">usage events &rarr; Stripe</text>
+          <g style="color:var(--ink-3)">
+            <path class="dgm-dash" d="M 660 204 L 684 204 L 684 168" marker-end="url(#ar)"/>
+          </g>
+
+          <g style="color:var(--ink-2)">
+            <line class="dgm-line" x1="490" y1="234" x2="490" y2="262"/>
+            <line class="dgm-line" x1="163" y1="262" x2="817" y2="262"/>
+            <line class="dgm-line" x1="163" y1="262" x2="163" y2="292" marker-end="url(#ar)"/>
+            <line class="dgm-line" x1="490" y1="262" x2="490" y2="292" marker-end="url(#ar)"/>
+          </g>
+          <g style="color:var(--accent)">
+            <line class="dgm-line-acc" x1="817" y1="262" x2="817" y2="292" marker-end="url(#ar)"/>
+          </g>
+
+          <text class="dgm-a" x="171" y="281">model calls</text>
+          <text class="dgm-a" x="498" y="281">long jobs</text>
+          <text class="dgm-a dgm-acc-t" x="825" y="281">publish</text>
+
+          <rect class="dgm-box" x="28" y="294" width="270" height="62" rx="2"/>
+          <text class="dgm-t" x="163" y="318" text-anchor="middle">LiteLLM gateway</text>
+          <text class="dgm-s" x="163" y="336" text-anchor="middle">routing &middot; per-tenant budget</text>
+
+          <rect class="dgm-box" x="355" y="294" width="270" height="62" rx="2"/>
+          <text class="dgm-t" x="490" y="318" text-anchor="middle">Trigger.dev</text>
+          <text class="dgm-s" x="490" y="336" text-anchor="middle">durable runs &middot; retries</text>
+
+          <rect class="dgm-box-acc" x="682" y="294" width="270" height="62" rx="2"/>
+          <text class="dgm-t dgm-acc-t" x="817" y="318" text-anchor="middle">Connector service</text>
+          <text class="dgm-s dgm-acc-t" x="817" y="336" text-anchor="middle">Arctic OAuth &middot; tokens you hold</text>
+
+          <g style="color:var(--ink-2)">
+            <line class="dgm-line" x1="163" y1="356" x2="163" y2="392" marker-end="url(#ar)"/>
+            <line class="dgm-line" x1="490" y1="356" x2="490" y2="392" marker-end="url(#ar)"/>
+          </g>
+          <g style="color:var(--accent)">
+            <line class="dgm-line-acc" x1="817" y1="356" x2="817" y2="392" marker-end="url(#ar)"/>
+          </g>
+          <text class="dgm-a" x="171" y="379">one key</text>
+          <text class="dgm-a" x="498" y="379">isolated</text>
+          <text class="dgm-a dgm-acc-t" x="825" y="379">user&rsquo;s token</text>
+
+          <rect class="dgm-box" x="28" y="394" width="270" height="62" rx="2"/>
+          <text class="dgm-t" x="163" y="418" text-anchor="middle">Claude &middot; GPT &middot; Gemini</text>
+          <text class="dgm-s" x="163" y="436" text-anchor="middle">+ hosted image models</text>
+
+          <rect class="dgm-box" x="355" y="394" width="270" height="62" rx="2"/>
+          <text class="dgm-t" x="490" y="418" text-anchor="middle">E2B sandbox</text>
+          <text class="dgm-s" x="490" y="436" text-anchor="middle">browser-use &middot; files &middot; encode</text>
+
+          <rect class="dgm-box" x="682" y="394" width="270" height="62" rx="2"/>
+          <text class="dgm-t" x="817" y="418" text-anchor="middle">X &middot; YouTube &middot; Instagram</text>
+          <text class="dgm-s" x="817" y="436" text-anchor="middle">official platform APIs</text>
+
+          <text class="dgm-s" x="28" y="486">Solid = request path</text>
+          <text class="dgm-s" x="190" y="486">Dashed = state &amp; telemetry</text>
+          <text class="dgm-s dgm-acc-t" x="405" y="486">Accent = the service you write</text>
+        </svg>
+      </div>
+      <figcaption>Everything except the accented box is an existing MIT / Apache-2.0 / BSD component you deploy unmodified. The connector service is the one piece with no clean off-the-shelf option &mdash; and it is where your customers&rsquo; credentials live, so owning it is a security win as well as a licence one.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <p class="eyebrow">The gap, in detail</p>
+    <h2>Why the OAuth layer has to be yours</h2>
+    <p class="prose">Every candidate for &ldquo;let my agent post to a user&rsquo;s X account&rdquo; fails a different way. The difference is not a feature &mdash; it is where the refresh token physically sits.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 900 250" role="img" aria-label="Comparison diagram: with a hosted connector, your API calls a vendor cloud that stores the customer's OAuth token before reaching the X API, adding a hop outside your infrastructure. With your own connector service, the token stays in your own encrypted Postgres and your API calls the X API directly.">
+          <defs>
+            <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <text class="dgm-s" x="20" y="22">OPTION A &mdash; HOSTED CONNECTOR (COMPOSIO, NANGO)</text>
+
+          <rect class="dgm-box" x="20" y="36" width="180" height="52" rx="2"/>
+          <text class="dgm-t" x="110" y="60" text-anchor="middle">Your API</text>
+          <text class="dgm-s" x="110" y="77" text-anchor="middle">agent tool call</text>
+
+          <g style="color:var(--ink-2)">
+            <line class="dgm-line" x1="200" y1="62" x2="310" y2="62" marker-end="url(#ar2)"/>
+          </g>
+          <text class="dgm-a" x="255" y="54" text-anchor="middle">tool call</text>
+
+          <rect class="dgm-box" x="312" y="36" width="230" height="52" rx="2" style="stroke:var(--bad); stroke-width:1.75"/>
+          <text class="dgm-t" x="427" y="60" text-anchor="middle" style="fill:var(--bad)">Vendor cloud</text>
+          <text class="dgm-s" x="427" y="77" text-anchor="middle" style="fill:var(--bad)">holds your customers&rsquo; tokens</text>
+
+          <g style="color:var(--ink-2)">
+            <line class="dgm-line" x1="542" y1="62" x2="652" y2="62" marker-end="url(#ar2)"/>
+          </g>
+          <text class="dgm-a" x="597" y="54" text-anchor="middle">posts as user</text>
+
+          <rect class="dgm-box" x="654" y="36" width="180" height="52" rx="2"/>
+          <text class="dgm-t" x="744" y="60" text-anchor="middle">X API</text>
+          <text class="dgm-s" x="744" y="77" text-anchor="middle">$0.015&ndash;$0.20 / post</text>
+
+          <text class="dgm-s" x="312" y="108" style="fill:var(--bad)">Nango is Elastic v2 &middot; Composio&rsquo;s backend is closed source; self-host = enterprise sales</text>
+
+          <line x1="20" y1="132" x2="880" y2="132" style="stroke:var(--rule-strong); stroke-width:1"/>
+
+          <text class="dgm-s dgm-acc-t" x="20" y="160">OPTION B &mdash; YOUR OWN CONNECTOR SERVICE</text>
+
+          <rect class="dgm-box-acc" x="20" y="174" width="290" height="52" rx="2"/>
+          <text class="dgm-t dgm-acc-t" x="165" y="198" text-anchor="middle">Your API + connector (Arctic, MIT)</text>
+          <text class="dgm-s dgm-acc-t" x="165" y="215" text-anchor="middle">tokens encrypted in your Postgres</text>
+
+          <g style="color:var(--accent)">
+            <line class="dgm-line-acc" x1="310" y1="200" x2="652" y2="200" marker-end="url(#ar2)"/>
+          </g>
+          <text class="dgm-a dgm-acc-t" x="481" y="192" text-anchor="middle">posts as user &mdash; one hop, no third party</text>
+
+          <rect class="dgm-box" x="654" y="174" width="180" height="52" rx="2"/>
+          <text class="dgm-t" x="744" y="198" text-anchor="middle">X API</text>
+          <text class="dgm-s" x="744" y="215" text-anchor="middle">your developer app</text>
+        </svg>
+      </div>
+      <figcaption>The hop that disappears is the whole argument. Option B removes a vendor from the credential path, removes a licence question, and removes a per-call cost &mdash; at the price of running your own OAuth app registration and review with each platform, which Option A does not actually spare you either.</figcaption>
+    </figure>
+
+    <div class="cards">
+      <div class="card">
+        <h4>Scope of the build</h4>
+        <p class="big">4 providers</p>
+        <p>X, YouTube, Instagram, LinkedIn. Standard OAuth 2.0 authorisation-code flow with refresh, which Arctic already implements per provider.</p>
+      </div>
+      <div class="card">
+        <h4>What you own</h4>
+        <p class="big">Token custody</p>
+        <p>Encrypted refresh tokens per tenant per platform, plus rotation and revocation. This is the audit answer enterprise buyers will ask for.</p>
+      </div>
+      <div class="card">
+        <h4>Unavoidable either way</h4>
+        <p class="big">App review</p>
+        <p>Meta, TikTok and YouTube each require their own developer-app review. Weeks, not days &mdash; start this before you write the agent.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Deployment</p>
+    <h2>How this runs in production</h2>
+    <div class="prose">
+      <p>Every cleared component ships as a container, so the whole system is one Compose file to start and a Kubernetes namespace later. A workable split:</p>
+      <ul>
+        <li><strong>Stateless tier</strong> &mdash; Next.js app, agent runtime, connector service. Horizontally scaled behind a load balancer; no session affinity needed because Better Auth sessions live in Postgres.</li>
+        <li><strong>Worker tier</strong> &mdash; Trigger.dev workers. Scale on queue depth, not on request rate. This is where the long tail of video uploads and multi-step agent runs actually executes.</li>
+        <li><strong>Sandbox tier</strong> &mdash; E2B, isolated at the network level with no route back to your database. Treat every sandbox as hostile.</li>
+        <li><strong>Stateful tier</strong> &mdash; Postgres with row-level security keyed on tenant, Valkey, and object storage. Use managed Postgres from day one; agent platforms generate far more write traffic than a normal CRUD SaaS.</li>
+        <li><strong>Shared services</strong> &mdash; LiteLLM and Langfuse as their own deployments, so a gateway restart never takes the app down.</li>
+      </ul>
+      <h3>Sequencing</h3>
+      <ol>
+        <li><strong>Register the platform developer apps first.</strong> Review queues are the long pole and nothing else is blocked by starting them.</li>
+        <li><strong>Auth, tenancy, billing skeleton.</strong> Better Auth + Stripe + OpenMeter, with a hard per-tenant spend cap enforced in LiteLLM before any agent exists. Uncapped token spend is how these products die.</li>
+        <li><strong>Connector service for one platform.</strong> X only, end to end, real tokens.</li>
+        <li><strong>Agent runtime on top.</strong> Mastra with three tools: generate image, compose post, publish. Resist adding more until one works reliably.</li>
+        <li><strong>Sandbox and durable jobs</strong> once tasks start exceeding a single request.</li>
+      </ol>
+      <h3>The cost model to get right early</h3>
+      <p>X moved to pay-per-use in Feb 2026: about <strong>$0.015 per post, rising to $0.20 when the post contains a link</strong>. Price your credits against the link rate, not the text rate &mdash; a single user auto-posting fifty links a day costs you roughly $300 a month in platform fees before a token of inference. Meter with OpenMeter from the first day rather than retrofitting it.</p>
+    </div>
+  </section>
+
+  <p class="foot">Licences verified 12 August 2026 by reading each project&rsquo;s <code>LICENSE</code> at <code>HEAD</code>, plus <code>git</code> history where a relicensing was suspected. Licences change &mdash; Kortix changed twice in eleven weeks &mdash; so re-run this check before launch and pin the commit you build against. This is an engineering read of licence text, not legal advice; have counsel confirm the final stack before you take payment.</p>
+
+</div>
+
+</body>
+</html>
