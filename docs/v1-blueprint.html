@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="SocialPi v1 blueprint — scope, service map, credit lifecycle, data model, security posture and build order.">
+<title>SocialPi — v1 Blueprint</title>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --paper:#F5F7F9; --card:#FFFFFF; --card-2:#EDF1F5;
+    --ink:#131A22; --ink-2:#46525F; --ink-3:#6E7B88;
+    --rule:#D9E1E8; --rule-strong:#B9C5D0;
+    --accent:#2C3EA8; --accent-soft:#E6E9F7;
+    --ok:#1B6E46; --ok-soft:#E2F0E8;
+    --warn:#8A5A0C; --warn-soft:#F6EDDC;
+    --bad:#9C2F29; --bad-soft:#F7E6E4;
+    --font-display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --font-body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:#0F141A; --card:#161D25; --card-2:#1D262F;
+      --ink:#E8EDF2; --ink-2:#A5B2BF; --ink-3:#7A8792;
+      --rule:#28323D; --rule-strong:#3A4753;
+      --accent:#8C9BFF; --accent-soft:#1C2440;
+      --ok:#4FC98A; --ok-soft:#14291F;
+      --warn:#E0A93F; --warn-soft:#2B2314;
+      --bad:#F0776E; --bad-soft:#2E1917;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0F141A; --card:#161D25; --card-2:#1D262F;
+    --ink:#E8EDF2; --ink-2:#A5B2BF; --ink-3:#7A8792;
+    --rule:#28323D; --rule-strong:#3A4753;
+    --accent:#8C9BFF; --accent-soft:#1C2440;
+    --ok:#4FC98A; --ok-soft:#14291F;
+    --warn:#E0A93F; --warn-soft:#2B2314;
+    --bad:#F0776E; --bad-soft:#2E1917;
+  }
+  :root[data-theme="light"] {
+    --paper:#F5F7F9; --card:#FFFFFF; --card-2:#EDF1F5;
+    --ink:#131A22; --ink-2:#46525F; --ink-3:#6E7B88;
+    --rule:#D9E1E8; --rule-strong:#B9C5D0;
+    --accent:#2C3EA8; --accent-soft:#E6E9F7;
+    --ok:#1B6E46; --ok-soft:#E2F0E8;
+    --warn:#8A5A0C; --warn-soft:#F6EDDC;
+    --bad:#9C2F29; --bad-soft:#F7E6E4;
+  }
+
+  html { background:var(--paper); }
+  body { background:var(--paper); color:var(--ink); font-family:var(--font-body); font-size:16px; line-height:1.6; margin:0; padding:0 24px 96px; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:1100px; margin:0 auto; }
+  .prose { max-width:68ch; }
+
+  .masthead { border-bottom:2px solid var(--ink); padding:56px 0 20px; margin-bottom:40px; }
+  .kicker { font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin:0 0 14px; }
+  .masthead h1 { font-family:var(--font-display); font-weight:600; font-size:clamp(30px,4.6vw,50px); line-height:1.08; letter-spacing:-.015em; margin:0 0 16px; text-wrap:balance; }
+  .standfirst { font-size:18px; line-height:1.55; color:var(--ink-2); max-width:60ch; margin:0; }
+
+  .decisions { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1px; background:var(--rule); border:1px solid var(--rule); margin-top:30px; }
+  .decisions div { background:var(--card); padding:14px 16px; }
+  .decisions dt { font-family:var(--font-mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin:0 0 6px; }
+  .decisions dd { margin:0; font-size:14.5px; font-weight:600; line-height:1.35; }
+
+  section { margin:0 0 60px; }
+  .eyebrow { font-family:var(--font-mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); padding-bottom:8px; border-bottom:1px solid var(--rule); margin:0 0 22px; }
+  h2 { font-family:var(--font-display); font-weight:600; font-size:clamp(23px,2.7vw,31px); line-height:1.2; letter-spacing:-.01em; margin:0 0 16px; text-wrap:balance; }
+  h3 { font-family:var(--font-display); font-weight:600; font-size:19px; line-height:1.3; margin:34px 0 10px; }
+  p { margin:0 0 16px; }
+  a { color:var(--accent); text-underline-offset:2px; }
+  a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  strong { font-weight:650; }
+  code { font-family:var(--font-mono); font-size:.88em; background:var(--card-2); padding:1px 5px; border-radius:3px; }
+
+  .verdict { background:var(--card); border:1px solid var(--rule); border-left:4px solid var(--accent); padding:24px 28px; margin:0 0 28px; }
+  .verdict h2 { margin-bottom:10px; }
+  .verdict p:last-child { margin-bottom:0; }
+
+  .scroller { overflow-x:auto; margin:0 0 12px; }
+  table { border-collapse:collapse; width:100%; min-width:700px; font-size:14.5px; }
+  thead th { text-align:left; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); font-weight:500; padding:0 14px 9px; border-bottom:1px solid var(--rule-strong); white-space:nowrap; }
+  tbody td { padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tbody tr:hover { background:var(--card); }
+  td.proj { font-weight:600; white-space:nowrap; }
+  td.note { color:var(--ink-2); font-size:13.5px; line-height:1.5; }
+  td.num { font-family:var(--font-mono); font-variant-numeric:tabular-nums; white-space:nowrap; text-align:right; }
+  td.ctr { text-align:center; }
+  .st { border-left:3px solid transparent; padding-left:11px; }
+  .st-ok { border-left-color:var(--ok); }
+  .st-warn { border-left-color:var(--warn); }
+  .st-bad { border-left-color:var(--bad); }
+  .st-acc { border-left-color:var(--accent); }
+  tr.hi td { background:var(--accent-soft); }
+
+  .pill { display:inline-block; font-family:var(--font-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; padding:2px 8px; border-radius:2px; white-space:nowrap; }
+  .p-ok { background:var(--ok-soft); color:var(--ok); }
+  .p-warn { background:var(--warn-soft); color:var(--warn); }
+  .p-bad { background:var(--bad-soft); color:var(--bad); }
+
+  .tcap { font-size:13px; color:var(--ink-3); margin:0 0 34px; max-width:70ch; }
+
+  figure { margin:0 0 14px; background:var(--card); border:1px solid var(--rule); padding:26px 22px 18px; }
+  .figscroll { overflow-x:auto; }
+  figure svg { display:block; width:100%; min-width:700px; height:auto; color:var(--ink); }
+  figcaption { margin-top:18px; padding-top:14px; border-top:1px solid var(--rule); font-size:13.5px; line-height:1.55; color:var(--ink-2); }
+
+  .b { fill:var(--card-2); stroke:var(--rule-strong); stroke-width:1.25; }
+  .b-acc { fill:var(--accent-soft); stroke:var(--accent); stroke-width:1.9; }
+  .b-ok { fill:var(--ok-soft); stroke:var(--ok); stroke-width:1.6; }
+  .b-warn { fill:var(--warn-soft); stroke:var(--warn); stroke-width:1.6; }
+  .b-bad { fill:var(--bad-soft); stroke:var(--bad); stroke-width:1.6; }
+  .b-out { fill:none; stroke:var(--rule-strong); stroke-width:1.25; stroke-dasharray:5 5; }
+  .t { font-family:var(--font-body); font-size:12.5px; font-weight:600; fill:var(--ink); }
+  .s { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); letter-spacing:.02em; }
+  .zl { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); letter-spacing:.14em; }
+  .a { font-family:var(--font-mono); font-size:9.5px; fill:var(--ink-2); letter-spacing:.03em; }
+  .acc { fill:var(--accent); }
+  .ln { stroke:var(--ink-2); stroke-width:1.35; fill:none; }
+  .ln-acc { stroke:var(--accent); stroke-width:1.9; fill:none; }
+  .ln-d { stroke:var(--ink-3); stroke-width:1.15; stroke-dasharray:4 4; fill:none; }
+
+  ul, ol { margin:0 0 16px; padding-left:22px; }
+  li { margin-bottom:8px; }
+  li::marker { color:var(--ink-3); }
+
+  .foot { border-top:2px solid var(--ink); margin-top:56px; padding-top:20px; font-size:13.5px; color:var(--ink-3); max-width:72ch; }
+
+  @media (max-width:640px) { body { padding:0 16px 64px; } .masthead { padding-top:36px; } }
+  @media print { body { background:#fff; color:#000; padding:0; } figure { break-inside:avoid; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">SocialPi &middot; v1 blueprint</p>
+    <h1>What v1 is, how it works, and how it gets built</h1>
+    <p class="standfirst">A tenant signs up, connects their social accounts, buys credits, and types what they want in plain English. An agent plans it, generates any media needed, and publishes &mdash; now or at a scheduled time.</p>
+    <dl class="decisions">
+      <div><dt>Platforms</dt><dd>X, LinkedIn, Instagram, YouTube</dd></div>
+      <div><dt>Market</dt><dd>Global &mdash; region-agnostic build</dd></div>
+      <div><dt>Billing</dt><dd>Prepaid credits</dd></div>
+      <div><dt>Scheduling</dt><dd>Immediate <em>and</em> scheduled</dd></div>
+      <div><dt>Sandbox</dt><dd>None &mdash; fixed toolset</dd></div>
+      <div><dt>Host</dt><dd>Hetzner AX42 + Coolify + Neon</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <div class="verdict">
+      <h2>The critical path is app review, not code</h2>
+      <p class="prose">Four platforms means four developer-app registrations, and <strong>Meta, Google and TikTok reviews take weeks and can reject you</strong>. Nothing in the codebase blocks starting them.</p>
+      <p class="prose"><strong>Day one action:</strong> register all four in parallel, before writing application code. Build against X first because it unblocks fastest &mdash; the other three are the same connector pattern with different adapters.</p>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Platform</th><th>Review weight</th><th>What to know</th></tr></thead>
+        <tbody>
+          <tr><td class="proj st st-ok">X</td><td><span class="pill p-ok">Light</span></td><td class="note">Pay-per-use. $0.015/post, <strong>$0.20 if the post contains a link</strong>. Since Apr 2026, follow/like/quote writes are gone from self-serve tiers.</td></tr>
+          <tr><td class="proj st st-warn">LinkedIn</td><td><span class="pill p-warn">Medium</span></td><td class="note">Requires a company page and a product request for posting scopes.</td></tr>
+          <tr><td class="proj st st-bad">Instagram</td><td><span class="pill p-bad">Heavy</span></td><td class="note">Meta App Review. Business/Creator accounts only, via a linked Facebook Page. Graph API accepts a <code>video_url</code> &mdash; publish by URL from R2 and skip egress entirely.</td></tr>
+          <tr><td class="proj st st-bad">YouTube</td><td><span class="pill p-bad">Heavy</span></td><td class="note">Google OAuth verification plus security assessment for sensitive scopes. Upload quota is a hard constraint &mdash; check the daily limit before promising volume.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Figure 1 &mdash; system map</p>
+    <h2>Nine containers, one box</h2>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 1000 540" role="img" aria-label="v1 system map. Cloudflare fronts the web service on a single Hetzner box running Coolify. Inside the box sit web, api, connector, worker, browser-worker, litellm, langfuse and Valkey. Neon hosts managed Postgres which also holds the pg-boss queue. The connector is the only service calling the four social platform APIs.">
+          <defs>
+            <marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <rect class="b" x="24" y="28" width="140" height="44" rx="2"/>
+          <text class="t" x="94" y="48" text-anchor="middle">Browser</text>
+          <text class="s" x="94" y="63" text-anchor="middle">tenant user</text>
+
+          <rect class="b-out" x="196" y="16" width="230" height="68" rx="3"/>
+          <text class="zl" x="206" y="32">CLOUDFLARE</text>
+          <rect class="b" x="208" y="38" width="206" height="38" rx="2"/>
+          <text class="t" x="311" y="62" text-anchor="middle">DNS &middot; WAF &middot; CDN</text>
+
+          <rect class="b" x="792" y="28" width="184" height="56" rx="2"/>
+          <text class="t" x="884" y="50" text-anchor="middle">Cloudflare R2</text>
+          <text class="s" x="884" y="66" text-anchor="middle">media &middot; zero egress</text>
+
+          <g style="color:var(--ink-2)">
+            <line class="ln" x1="164" y1="50" x2="194" y2="50" marker-end="url(#m1)"/>
+            <line class="ln" x1="311" y1="84" x2="311" y2="120" marker-end="url(#m1)"/>
+          </g>
+
+          <rect class="b-out" x="24" y="104" width="640" height="404" rx="3"/>
+          <text class="zl" x="36" y="124">HETZNER AX42 &mdash; 8 CORES / 64 GB &mdash; COOLIFY</text>
+
+          <rect class="b" x="216" y="132" width="190" height="46" rx="2"/>
+          <text class="t" x="311" y="152" text-anchor="middle">web</text>
+          <text class="s" x="311" y="167" text-anchor="middle">Next.js + assistant-ui</text>
+          <text class="a" x="416" y="152">only public route</text>
+
+          <g style="color:var(--ink-2)"><line class="ln" x1="311" y1="178" x2="311" y2="202" marker-end="url(#m1)"/></g>
+
+          <rect class="b" x="196" y="204" width="230" height="50" rx="2"/>
+          <text class="t" x="311" y="225" text-anchor="middle">api</text>
+          <text class="s" x="311" y="241" text-anchor="middle">Mastra + Better Auth</text>
+
+          <rect class="b" x="44" y="204" width="130" height="50" rx="2"/>
+          <text class="t" x="109" y="225" text-anchor="middle">litellm</text>
+          <text class="s" x="109" y="241" text-anchor="middle">budget caps</text>
+          <g style="color:var(--ink-2)"><line class="ln" x1="194" y1="229" x2="176" y2="229" marker-end="url(#m1)"/></g>
+
+          <rect class="b" x="44" y="272" width="130" height="50" rx="2"/>
+          <text class="t" x="109" y="293" text-anchor="middle">langfuse</text>
+          <text class="s" x="109" y="309" text-anchor="middle">traces &middot; cost</text>
+
+          <rect class="b" x="470" y="204" width="170" height="50" rx="2"/>
+          <text class="t" x="555" y="225" text-anchor="middle">Valkey</text>
+          <text class="s" x="555" y="241" text-anchor="middle">cache &middot; limits</text>
+
+          <rect class="b" x="196" y="288" width="230" height="50" rx="2"/>
+          <text class="t" x="311" y="309" text-anchor="middle">worker</text>
+          <text class="s" x="311" y="325" text-anchor="middle">pg-boss consumers</text>
+          <g style="color:var(--ink-2)"><line class="ln" x1="311" y1="254" x2="311" y2="286" marker-end="url(#m1)"/></g>
+
+          <rect class="b" x="470" y="288" width="170" height="50" rx="2"/>
+          <text class="t" x="555" y="306" text-anchor="middle">browser-worker</text>
+          <text class="s" x="555" y="322" text-anchor="middle">hardened &middot; no DB route</text>
+          <g style="color:var(--ink-2)"><line class="ln" x1="428" y1="313" x2="468" y2="313" marker-end="url(#m1)"/></g>
+
+          <rect class="b-acc" x="176" y="392" width="270" height="56" rx="2"/>
+          <text class="t acc" x="311" y="415" text-anchor="middle">connector</text>
+          <text class="s acc" x="311" y="432" text-anchor="middle">sole holder of token decryption keys</text>
+          <g style="color:var(--accent)"><line class="ln-acc" x1="311" y1="338" x2="311" y2="390" marker-end="url(#m1)"/></g>
+
+          <rect class="b" x="694" y="196" width="282" height="66" rx="2"/>
+          <text class="t" x="835" y="218" text-anchor="middle">Neon &mdash; managed Postgres</text>
+          <text class="s" x="835" y="235" text-anchor="middle">RLS &middot; PITR &middot; backups</text>
+          <text class="s" x="835" y="250" text-anchor="middle">also holds the pg-boss queue</text>
+          <g style="color:var(--ink-2)">
+            <line class="ln" x1="428" y1="222" x2="692" y2="222" marker-end="url(#m1)"/>
+            <path class="ln" d="M 428 300 L 660 300 L 660 250 L 692 250" marker-end="url(#m1)"/>
+          </g>
+          <text class="a" x="470" y="294">enqueue / dequeue</text>
+
+          <rect class="b-out" x="694" y="290" width="282" height="218" rx="3"/>
+          <text class="zl" x="706" y="310">EXTERNAL APIS</text>
+
+          <rect class="b" x="706" y="318" width="258" height="42" rx="2"/>
+          <text class="t" x="835" y="337" text-anchor="middle">Anthropic &middot; OpenAI &middot; Google</text>
+          <text class="s" x="835" y="352" text-anchor="middle">+ image providers</text>
+          <g style="color:var(--ink-2)"><path class="ln" d="M 44 216 L 32 216 L 32 96 L 686 96 L 686 336 L 704 336" marker-end="url(#m1)"/></g>
+
+          <rect class="b" x="706" y="376" width="258" height="42" rx="2"/>
+          <text class="t" x="835" y="395" text-anchor="middle">Stripe &middot; OpenMeter</text>
+          <text class="s" x="835" y="410" text-anchor="middle">top-ups &middot; metering</text>
+
+          <rect class="b" x="706" y="440" width="258" height="56" rx="2"/>
+          <text class="t" x="835" y="462" text-anchor="middle">X &middot; LinkedIn</text>
+          <text class="t" x="835" y="478" text-anchor="middle">Instagram &middot; YouTube</text>
+          <text class="s" x="835" y="492" text-anchor="middle">official platform APIs</text>
+          <g style="color:var(--accent)"><line class="ln-acc" x1="448" y1="468" x2="704" y2="468" marker-end="url(#m1)"/></g>
+          <text class="a acc" x="576" y="462" text-anchor="middle">tenant's token</text>
+
+          <g style="color:var(--ink-3)"><path class="ln-d" d="M 448 420 L 676 420 L 676 66 L 790 66" marker-end="url(#m1)"/></g>
+
+          <text class="s" x="24" y="528">Solid = request path</text>
+          <text class="s" x="180" y="528">Dashed = media</text>
+          <text class="s acc" x="330" y="528">Accent = the service you write</text>
+        </svg>
+      </div>
+      <figcaption><strong>Only <code>web</code> is publicly routable.</strong> <code>connector</code> is the single service holding token decryption keys &mdash; <code>api</code> and <code>worker</code> request a publish and never see credentials. Postgres is managed by Neon rather than living on the box, because the market region is undecided: that turns an eventual move into a planned data migration rather than an outage.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <p class="eyebrow">Figure 2 &mdash; the money path</p>
+    <h2>Credits are held across the async gap</h2>
+    <p class="prose">Prepaid credits exist to solve one specific problem: <strong>a post containing a link costs $0.20 on X, thirteen times a plain post.</strong> Flat subscriptions bleed money on exactly the users who post most.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 1000 540" role="img" aria-label="Credit lifecycle diagram. The api reserves credits before any spend; if the balance is short it refuses immediately. The request then goes either straight to the queue or into scheduled posts for later. The worker generates media and asks the connector to publish to a platform. The reservation stays open across the whole asynchronous span and resolves to either commit on success or release on failure.">
+          <defs>
+            <marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <rect class="b" x="180" y="20" width="280" height="44" rx="2"/>
+          <text class="t" x="320" y="40" text-anchor="middle">User request in chat</text>
+          <text class="s" x="320" y="55" text-anchor="middle">"post this with a link, tomorrow 9am"</text>
+
+          <g style="color:var(--ink-2)"><line class="ln" x1="320" y1="64" x2="320" y2="90" marker-end="url(#m2)"/></g>
+
+          <rect class="b" x="180" y="92" width="280" height="48" rx="2"/>
+          <text class="t" x="320" y="113" text-anchor="middle">api &mdash; plan, then reserve</text>
+          <text class="s" x="320" y="129" text-anchor="middle">spend cap checked before any model call</text>
+
+          <rect class="b-bad" x="20" y="92" width="140" height="48" rx="2"/>
+          <text class="t" x="90" y="113" text-anchor="middle" style="fill:var(--bad)">Refuse</text>
+          <text class="s" x="90" y="129" text-anchor="middle" style="fill:var(--bad)">top-up prompt</text>
+          <g style="color:var(--bad)"><line class="ln" x1="178" y1="116" x2="162" y2="116" marker-end="url(#m2)" style="stroke:var(--bad)"/></g>
+          <text class="a" x="90" y="82" text-anchor="middle" style="fill:var(--bad)">balance short</text>
+
+          <g style="color:var(--ink-2)"><line class="ln" x1="320" y1="140" x2="320" y2="168" marker-end="url(#m2)"/></g>
+
+          <rect class="b" x="180" y="170" width="280" height="44" rx="2"/>
+          <text class="t" x="320" y="190" text-anchor="middle">Publish now, or schedule?</text>
+          <text class="s" x="320" y="205" text-anchor="middle">tenant timezone applied here</text>
+
+          <rect class="b" x="20" y="240" width="180" height="56" rx="2"/>
+          <text class="t" x="110" y="262" text-anchor="middle">scheduled_posts</text>
+          <text class="s" x="110" y="278" text-anchor="middle">pg-boss sendAfter(run_at)</text>
+          <text class="s" x="110" y="291" text-anchor="middle">editable &middot; cancellable</text>
+          <g style="color:var(--ink-2)">
+            <path class="ln" d="M 180 192 L 110 192 L 110 238" marker-end="url(#m2)"/>
+            <path class="ln" d="M 200 268 L 240 268 L 240 306" marker-end="url(#m2)"/>
+          </g>
+          <text class="a" x="140" y="228">later</text>
+          <text class="a" x="204" y="290">time arrives</text>
+
+          <rect class="b" x="250" y="308" width="220" height="44" rx="2"/>
+          <text class="t" x="360" y="328" text-anchor="middle">pg-boss queue</text>
+          <text class="s" x="360" y="343" text-anchor="middle">at-least-once &middot; retries</text>
+          <g style="color:var(--ink-2)"><path class="ln" d="M 380 214 L 380 306" marker-end="url(#m2)"/></g>
+          <text class="a" x="388" y="240">now</text>
+
+          <g style="color:var(--ink-2)"><line class="ln" x1="360" y1="352" x2="360" y2="380" marker-end="url(#m2)"/></g>
+
+          <rect class="b" x="250" y="382" width="220" height="44" rx="2"/>
+          <text class="t" x="360" y="402" text-anchor="middle">worker</text>
+          <text class="s" x="360" y="417" text-anchor="middle">generate image &rarr; R2</text>
+
+          <g style="color:var(--accent)"><line class="ln-acc" x1="360" y1="426" x2="360" y2="454" marker-end="url(#m2)"/></g>
+
+          <rect class="b-acc" x="230" y="456" width="260" height="48" rx="2"/>
+          <text class="t acc" x="360" y="477" text-anchor="middle">connector &rarr; platform API</text>
+          <text class="s acc" x="360" y="493" text-anchor="middle">decrypt token &middot; refresh if expired</text>
+
+          <!-- reservation rail -->
+          <rect class="b-out" x="560" y="88" width="420" height="424" rx="3"/>
+          <text class="zl" x="574" y="108">CREDIT RESERVATION LIFECYCLE</text>
+
+          <rect class="b" x="596" y="120" width="340" height="46" rx="2"/>
+          <text class="t" x="766" y="140" text-anchor="middle">RESERVE</text>
+          <text class="s" x="766" y="156" text-anchor="middle">balance check + hold, at request time</text>
+          <g style="color:var(--ink-3)"><line class="ln-d" x1="462" y1="116" x2="594" y2="140" marker-end="url(#m2)"/></g>
+
+          <line x1="766" y1="166" x2="766" y2="392" style="stroke:var(--rule-strong); stroke-width:2; stroke-dasharray:5 5"/>
+          <text class="a" x="782" y="210">the hold stays open across</text>
+          <text class="a" x="782" y="226">the entire asynchronous span &mdash;</text>
+          <text class="a" x="782" y="242">seconds for an immediate post,</text>
+          <text class="a" x="782" y="258">hours or days for a scheduled one</text>
+
+          <text class="a" x="782" y="300">this is what stops a failed</text>
+          <text class="a" x="782" y="316">upload silently burning</text>
+          <text class="a" x="782" y="332">a customer's balance</text>
+
+          <rect class="b-ok" x="596" y="394" width="164" height="52" rx="2"/>
+          <text class="t" x="678" y="415" text-anchor="middle" style="fill:var(--ok)">COMMIT</text>
+          <text class="s" x="678" y="431" text-anchor="middle" style="fill:var(--ok)">on success &rarr; ledger debit</text>
+
+          <rect class="b-warn" x="772" y="394" width="164" height="52" rx="2"/>
+          <text class="t" x="854" y="415" text-anchor="middle" style="fill:var(--warn)">RELEASE</text>
+          <text class="s" x="854" y="431" text-anchor="middle" style="fill:var(--warn)">on failure &rarr; credits back</text>
+
+          <g style="color:var(--ok)"><path class="ln" d="M 492 476 L 540 476 L 540 420 L 594 420" marker-end="url(#m2)" style="stroke:var(--ok)"/></g>
+          <g style="color:var(--warn)"><path class="ln" d="M 492 490 L 560 490 L 560 460 L 854 460 L 854 448" marker-end="url(#m2)" style="stroke:var(--warn)"/></g>
+          <text class="a" x="500" y="470" style="fill:var(--ok)">ok</text>
+          <text class="a" x="500" y="506" style="fill:var(--warn)">fail</text>
+
+          <text class="s" x="596" y="472">Usage event written on commit &mdash; feeds OpenMeter and per-tenant cost in Langfuse.</text>
+          <text class="s" x="596" y="490">Retry with backoff after release; the user sees why it failed.</text>
+        </svg>
+      </div>
+      <figcaption><strong>Never charge on request alone, and never on completion alone.</strong> Reserve at request time so the refusal is instant and visible; commit only when the platform confirms; release on failure. With scheduled posts the hold may be open for days, which is exactly why the reservation is a row rather than an in-memory lock.</figcaption>
+    </figure>
+
+    <h3>Indicative pricing</h3>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Action</th><th>Credits</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td class="proj">Agent turn (planning)</td><td class="num">1&ndash;3</td><td class="note">Scales with tokens; cap per tenant in LiteLLM.</td></tr>
+          <tr><td class="proj">Text post</td><td class="num">1</td><td class="note">~$0.015 platform cost.</td></tr>
+          <tr class="hi"><td class="proj st st-acc">Post containing a link</td><td class="num">15</td><td class="note"><strong>$0.20 on X &mdash; the one that must not be underpriced.</strong></td></tr>
+          <tr><td class="proj">Image generation</td><td class="num">5</td><td class="note">Provider cost plus margin.</td></tr>
+          <tr><td class="proj">Video upload</td><td class="num">20</td><td class="note">Egress plus platform processing.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tcap">At roughly $0.02/credit retail. Calibrate against real invoices after the first month &mdash; the property that matters is that <strong>every priced action maps to a metered cost</strong>, so margin is knowable rather than hoped for.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Figure 3 &mdash; schedule</p>
+    <h2>Build order and the critical path</h2>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 1000 420" role="img" aria-label="Gantt chart of the twelve week build. Platform app review runs from week zero to week ten and is the critical path. Infrastructure, auth, credits and the X connector run in the first four weeks, followed by the agent runtime, scheduling, the remaining three connectors and hardening. Launch is gated by the slowest platform approval at around week eleven and a half.">
+          <defs>
+            <marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- week grid -->
+          <g>
+            <line x1="236" y1="44" x2="236" y2="372" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="299" y1="44" x2="299" y2="372" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="362" y1="44" x2="362" y2="372" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="425" y1="44" x2="425" y2="372" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="489" y1="44" x2="489" y2="372" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="552" y1="44" x2="552" y2="372" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="615" y1="44" x2="615" y2="372" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="678" y1="44" x2="678" y2="372" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="742" y1="44" x2="742" y2="372" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="805" y1="44" x2="805" y2="372" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="868" y1="44" x2="868" y2="372" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="931" y1="44" x2="931" y2="372" style="stroke:var(--rule); stroke-width:1"/>
+          </g>
+          <text class="s" x="176" y="36">WEEK</text>
+          <text class="s" x="168" y="36">0</text>
+          <text class="s" x="232" y="36">1</text>
+          <text class="s" x="295" y="36">2</text>
+          <text class="s" x="358" y="36">3</text>
+          <text class="s" x="421" y="36">4</text>
+          <text class="s" x="485" y="36">5</text>
+          <text class="s" x="548" y="36">6</text>
+          <text class="s" x="611" y="36">7</text>
+          <text class="s" x="674" y="36">8</text>
+          <text class="s" x="738" y="36">9</text>
+          <text class="s" x="798" y="36">10</text>
+          <text class="s" x="861" y="36">11</text>
+          <text class="s" x="924" y="36">12</text>
+          <line x1="172" y1="44" x2="972" y2="44" style="stroke:var(--rule-strong); stroke-width:1"/>
+
+          <!-- bars -->
+          <text class="t" x="10" y="66">App review &times;4</text>
+          <rect class="b-acc" x="172" y="54" width="633" height="22" rx="2"/>
+          <text class="a acc" x="184" y="69">CRITICAL PATH &mdash; submit Meta &amp; Google on day one</text>
+
+          <text class="t" x="10" y="98">Infrastructure</text>
+          <rect class="b" x="172" y="86" width="127" height="22" rx="2"/>
+          <text class="a" x="182" y="101">box &middot; Coolify &middot; Neon &middot; CI</text>
+
+          <text class="t" x="10" y="130">Auth + tenancy</text>
+          <rect class="b" x="236" y="118" width="126" height="22" rx="2"/>
+          <text class="a" x="246" y="133">orgs &middot; roles &middot; RLS</text>
+
+          <text class="t" x="10" y="162">Credits</text>
+          <rect class="b" x="299" y="150" width="190" height="22" rx="2"/>
+          <text class="a" x="309" y="165">ledger &middot; Stripe &middot; spend caps</text>
+
+          <text class="t" x="10" y="194">connector &mdash; X</text>
+          <rect class="b-acc" x="299" y="182" width="190" height="22" rx="2"/>
+          <text class="a acc" x="309" y="197">OAuth &middot; token vault &middot; publish</text>
+
+          <text class="t" x="10" y="226">Agent runtime</text>
+          <rect class="b" x="425" y="214" width="253" height="22" rx="2"/>
+          <text class="a" x="435" y="229">Mastra &middot; three tools</text>
+
+          <text class="t" x="10" y="258">Scheduling</text>
+          <rect class="b" x="552" y="246" width="253" height="22" rx="2"/>
+          <text class="a" x="562" y="261">sendAfter &middot; calendar &middot; timezones</text>
+
+          <text class="t" x="10" y="290">Hardening</text>
+          <rect class="b" x="678" y="278" width="127" height="22" rx="2"/>
+          <text class="a" x="688" y="293">seccomp &middot; metering</text>
+
+          <text class="t" x="10" y="322">connectors &times;3</text>
+          <rect class="b" x="678" y="310" width="253" height="22" rx="2" style="stroke-dasharray:4 3"/>
+          <text class="a" x="688" y="325">LinkedIn &middot; Instagram &middot; YouTube &mdash; as approvals land</text>
+
+          <!-- launch -->
+          <line x1="931" y1="44" x2="931" y2="372" style="stroke:var(--accent); stroke-width:2; stroke-dasharray:5 4"/>
+          <text class="t acc" x="836" y="356">LAUNCH</text>
+          <text class="a acc" x="740" y="370">gated by slowest platform approval, not by code</text>
+
+          <text class="s" x="10" y="400">Working single-platform product by ~week 8 (steps 1&ndash;6). The remaining three connectors are repetition of a solved pattern &mdash; roughly one week each.</text>
+        </svg>
+      </div>
+      <figcaption>The dashed connector bar is the only work whose <em>start</em> depends on something outside your control. If Meta or Google review runs long, ship with the platforms already approved and add the rest without re-architecture &mdash; the connector interface is identical across all four.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <p class="eyebrow">Data</p>
+    <h2>Model and isolation</h2>
+    <p class="prose">Every tenant-scoped table carries <code>tenant_id</code> and is protected by <strong>row-level security</strong>. RLS is the isolation boundary &mdash; not application code.</p>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Table</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="proj">tenants</td><td class="note">Includes <code>timezone</code> &mdash; required for scheduling.</td></tr>
+          <tr><td class="proj">users, memberships</td><td class="note">Better Auth organisations; role per membership.</td></tr>
+          <tr><td class="proj st st-acc">social_connections</td><td class="note">Per tenant per platform: handle, scopes, <code>access_token_enc</code>, <code>refresh_token_enc</code>, <code>expires_at</code>, status. Decryptable only by <code>connector</code>.</td></tr>
+          <tr><td class="proj">credit_ledger</td><td class="note">Append-only: <code>delta</code>, <code>reason</code>, <code>ref_type</code>, <code>ref_id</code>, <code>balance_after</code>.</td></tr>
+          <tr><td class="proj">credit_reservations</td><td class="note"><code>amount</code>, <code>status</code> (held / committed / released), <code>job_id</code>.</td></tr>
+          <tr><td class="proj">conversations, messages</td><td class="note">Agent chat history.</td></tr>
+          <tr><td class="proj">posts</td><td class="note"><code>status</code>, <code>body</code>, <code>media_id</code>, <code>scheduled_for</code>, <code>published_at</code>, <code>platform_post_id</code>, <code>error</code>.</td></tr>
+          <tr><td class="proj">media_assets</td><td class="note">R2 key, mime, bytes, provenance.</td></tr>
+          <tr><td class="proj">usage_events</td><td class="note">Feeds OpenMeter; one row per metered action.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tcap"><strong>Store all timestamps in UTC</strong> and render in the tenant's timezone. Scheduling bugs are almost always a timezone stored at the wrong layer.</p>
+
+    <h3>Security posture</h3>
+    <div class="prose">
+      <p>No sandbox, because the agent has a <strong>fixed toolset and never executes code it writes</strong>. The controls that matter instead:</p>
+      <ul>
+        <li><strong><code>connector</code> is the only service holding token decryption keys.</strong> This is the boundary an enterprise buyer will ask about.</li>
+        <li><strong>Tokens encrypted at rest</strong>, key from environment, rotated on a schedule. Move to a KMS when a customer requires it.</li>
+        <li><strong><code>browser-worker</code> hardened</strong>: non-root, read-only rootfs, dropped capabilities, seccomp profile, and <strong>no network route back to Postgres</strong>. It handles untrusted <em>data</em>, so treat it as the most likely thing to be compromised.</li>
+        <li><strong>Spend cap checked before the model call</strong>, not after.</li>
+      </ul>
+      <p>If you later add code execution, the isolation step is <strong>gVisor with the systrap platform</strong> &mdash; strong isolation with no hardware-virtualisation requirement, so it runs on ordinary hosts. Firecracker or E2B only if you are running genuinely hostile code at volume.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Done</p>
+    <h2>Definition of done for v1</h2>
+    <div class="prose">
+      <ul>
+        <li>A new tenant can sign up, connect all four platforms, buy credits, and publish to each &mdash; immediately and on a schedule.</li>
+        <li>A failed publish releases its credit reservation, and the user sees why it failed.</li>
+        <li>Every agent run produces a Langfuse trace and a metered usage event.</li>
+        <li>A tenant cannot read another tenant's rows, verified by test with RLS enabled.</li>
+        <li>The whole stack rebuilds from the compose file and a database restore on a fresh box in under two hours.</li>
+      </ul>
+      <p>That last one is the deployment-first test. If it fails, you do not have a deployment &mdash; you have a machine you are afraid of.</p>
+    </div>
+  </section>
+
+  <p class="foot">Assumptions recorded 13 August 2026. Costs and platform terms verified 12 August 2026 &mdash; re-verify X and Meta pricing before pricing credits, as both changed materially during 2026. Companion documents: <a href="./hosting-options.html">hosting-options.html</a>, <a href="./deployment-architecture.html">deployment-architecture.html</a>, <a href="./open-source-stack-audit.html">open-source-stack-audit.html</a>.</p>
+
+</div>
+</body>
+</html>

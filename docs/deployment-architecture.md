@@ -2,13 +2,13 @@
 
 **SocialPi — how the stack runs, where it runs, and what it costs**
 
-> Companion documents: [`open-source-stack-audit.md`](./open-source-stack-audit.md) — which components were cleared and why.
+> Companion documents: [`hosting-options.md`](./hosting-options.md) — **provider comparison and cost; read this for where to deploy.** [`open-source-stack-audit.md`](./open-source-stack-audit.md) — which components were cleared and why.
 
 | | |
 |---|---|
 | **Researched** | 12 August 2026 |
-| **Target platform** | Railway |
-| **Verdict** | ✅ Railway works for v1 — but only after two components are swapped out |
+| **Scope** | Logical architecture + the capability constraints any host must satisfy |
+| **Provider** | **Not assumed.** Railway is analysed below as a worked example because its restrictions expose the two constraints that matter. The recommended host is in [`hosting-options.md`](./hosting-options.md). |
 
 ---
 

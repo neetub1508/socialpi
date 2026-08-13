@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="SocialPi hosting options — provider-independent comparison, capability requirements, placement stages and cost.">
+<title>SocialPi — Hosting Options and Cost</title>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --paper:#F5F7F9; --card:#FFFFFF; --card-2:#EDF1F5;
+    --ink:#131A22; --ink-2:#46525F; --ink-3:#6E7B88;
+    --rule:#D9E1E8; --rule-strong:#B9C5D0;
+    --accent:#2C3EA8; --accent-soft:#E6E9F7;
+    --ok:#1B6E46; --ok-soft:#E2F0E8;
+    --warn:#8A5A0C; --warn-soft:#F6EDDC;
+    --bad:#9C2F29; --bad-soft:#F7E6E4;
+    --font-display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --font-body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:#0F141A; --card:#161D25; --card-2:#1D262F;
+      --ink:#E8EDF2; --ink-2:#A5B2BF; --ink-3:#7A8792;
+      --rule:#28323D; --rule-strong:#3A4753;
+      --accent:#8C9BFF; --accent-soft:#1C2440;
+      --ok:#4FC98A; --ok-soft:#14291F;
+      --warn:#E0A93F; --warn-soft:#2B2314;
+      --bad:#F0776E; --bad-soft:#2E1917;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0F141A; --card:#161D25; --card-2:#1D262F;
+    --ink:#E8EDF2; --ink-2:#A5B2BF; --ink-3:#7A8792;
+    --rule:#28323D; --rule-strong:#3A4753;
+    --accent:#8C9BFF; --accent-soft:#1C2440;
+    --ok:#4FC98A; --ok-soft:#14291F;
+    --warn:#E0A93F; --warn-soft:#2B2314;
+    --bad:#F0776E; --bad-soft:#2E1917;
+  }
+  :root[data-theme="light"] {
+    --paper:#F5F7F9; --card:#FFFFFF; --card-2:#EDF1F5;
+    --ink:#131A22; --ink-2:#46525F; --ink-3:#6E7B88;
+    --rule:#D9E1E8; --rule-strong:#B9C5D0;
+    --accent:#2C3EA8; --accent-soft:#E6E9F7;
+    --ok:#1B6E46; --ok-soft:#E2F0E8;
+    --warn:#8A5A0C; --warn-soft:#F6EDDC;
+    --bad:#9C2F29; --bad-soft:#F7E6E4;
+  }
+
+  html { background:var(--paper); }
+  body {
+    background:var(--paper); color:var(--ink);
+    font-family:var(--font-body); font-size:16px; line-height:1.6;
+    margin:0; padding:0 24px 96px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1100px; margin:0 auto; }
+  .prose { max-width:68ch; }
+
+  .masthead { border-bottom:2px solid var(--ink); padding:56px 0 20px; margin-bottom:40px; }
+  .kicker { font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin:0 0 14px; }
+  .masthead h1 { font-family:var(--font-display); font-weight:600; font-size:clamp(30px,4.6vw,50px); line-height:1.08; letter-spacing:-.015em; margin:0 0 16px; text-wrap:balance; }
+  .standfirst { font-size:18px; line-height:1.55; color:var(--ink-2); max-width:60ch; margin:0; }
+  .meta { display:flex; flex-wrap:wrap; gap:10px 28px; margin-top:26px; font-family:var(--font-mono); font-size:11.5px; letter-spacing:.05em; color:var(--ink-3); text-transform:uppercase; }
+
+  section { margin:0 0 60px; }
+  .eyebrow { font-family:var(--font-mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); padding-bottom:8px; border-bottom:1px solid var(--rule); margin:0 0 22px; }
+  h2 { font-family:var(--font-display); font-weight:600; font-size:clamp(23px,2.7vw,31px); line-height:1.2; letter-spacing:-.01em; margin:0 0 16px; text-wrap:balance; }
+  h3 { font-family:var(--font-display); font-weight:600; font-size:19px; line-height:1.3; margin:34px 0 10px; }
+  p { margin:0 0 16px; }
+  a { color:var(--accent); text-underline-offset:2px; }
+  a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  strong { font-weight:650; }
+  code { font-family:var(--font-mono); font-size:.88em; background:var(--card-2); padding:1px 5px; border-radius:3px; }
+
+  .verdict { background:var(--card); border:1px solid var(--rule); border-left:4px solid var(--accent); padding:24px 28px; margin:0 0 28px; }
+  .verdict h2 { margin-bottom:10px; }
+  .verdict p:last-child { margin-bottom:0; }
+
+  .scroller { overflow-x:auto; margin:0 0 12px; }
+  table { border-collapse:collapse; width:100%; min-width:720px; font-size:14.5px; }
+  thead th { text-align:left; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); font-weight:500; padding:0 14px 9px; border-bottom:1px solid var(--rule-strong); white-space:nowrap; }
+  tbody td { padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tbody tr:hover { background:var(--card); }
+  td.proj { font-weight:600; white-space:nowrap; }
+  td.note { color:var(--ink-2); font-size:13.5px; line-height:1.5; }
+  td.num { font-family:var(--font-mono); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  td.ctr { text-align:center; font-size:15px; }
+  .st { border-left:3px solid transparent; padding-left:11px; }
+  .st-ok { border-left-color:var(--ok); }
+  .st-warn { border-left-color:var(--warn); }
+  .st-bad { border-left-color:var(--bad); }
+  tfoot td { padding:11px 14px; border-top:1px solid var(--rule-strong); font-weight:650; }
+  tr.hi td { background:var(--accent-soft); }
+
+  .pill { display:inline-block; font-family:var(--font-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; padding:2px 8px; border-radius:2px; white-space:nowrap; }
+  .p-ok { background:var(--ok-soft); color:var(--ok); }
+  .p-warn { background:var(--warn-soft); color:var(--warn); }
+  .p-bad { background:var(--bad-soft); color:var(--bad); }
+
+  .tcap { font-size:13px; color:var(--ink-3); margin:0 0 34px; max-width:70ch; }
+
+  figure { margin:0 0 14px; background:var(--card); border:1px solid var(--rule); padding:26px 22px 18px; }
+  .figscroll { overflow-x:auto; }
+  figure svg { display:block; width:100%; min-width:700px; height:auto; color:var(--ink); }
+  figcaption { margin-top:18px; padding-top:14px; border-top:1px solid var(--rule); font-size:13.5px; line-height:1.55; color:var(--ink-2); }
+
+  .b { fill:var(--card-2); stroke:var(--rule-strong); stroke-width:1.25; }
+  .b-acc { fill:var(--accent-soft); stroke:var(--accent); stroke-width:1.9; }
+  .b-out { fill:none; stroke:var(--rule-strong); stroke-width:1.25; stroke-dasharray:5 5; }
+  .t { font-family:var(--font-body); font-size:12.5px; font-weight:600; fill:var(--ink); }
+  .s { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); letter-spacing:.02em; }
+  .zl { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); letter-spacing:.14em; }
+  .a { font-family:var(--font-mono); font-size:9.5px; fill:var(--ink-2); letter-spacing:.03em; }
+  .acc { fill:var(--accent); }
+  .ln { stroke:var(--ink-2); stroke-width:1.35; fill:none; }
+  .ln-acc { stroke:var(--accent); stroke-width:1.9; fill:none; }
+
+  ul, ol { margin:0 0 16px; padding-left:22px; }
+  li { margin-bottom:8px; }
+  li::marker { color:var(--ink-3); }
+
+  .foot { border-top:2px solid var(--ink); margin-top:56px; padding-top:20px; font-size:13.5px; color:var(--ink-3); max-width:72ch; }
+
+  @media (max-width:640px) { body { padding:0 16px 64px; } .masthead { padding-top:36px; } }
+  @media print { body { background:#fff; color:#000; padding:0; } figure { break-inside:avoid; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">SocialPi &middot; Hosting options and cost</p>
+    <h1>Where the stack runs, independent of any one provider</h1>
+    <p class="standfirst">The cheapest credible option is also the one with the fewest restrictions. One &euro;49 bare-metal box gives roughly eight times the RAM of a ~$200 managed setup &mdash; plus the two capabilities managed PaaS could not provide at any price.</p>
+    <div class="meta">
+      <span>Researched 12 Aug 2026</span>
+      <span>No provider assumed</span>
+      <span>Recommendation: Hetzner AX42 + Coolify</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="verdict">
+      <h2>The headline</h2>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Option</th><th>v1 cost / month</th><th>Docker daemon</th><th>/dev/kvm</th><th>Ops burden</th></tr></thead>
+          <tbody>
+            <tr><td class="proj st st-warn">Railway</td><td class="num">~$200&ndash;250</td><td class="ctr">&#10007;</td><td class="ctr">&#10007;</td><td class="note">Lowest</td></tr>
+            <tr class="hi"><td class="proj st st-ok">Hetzner AX42 + Coolify</td><td class="num">~&euro;49 (~$53)</td><td class="ctr">&#10003;</td><td class="ctr">&#10003;</td><td class="note">High</td></tr>
+            <tr><td class="proj st st-ok">&hellip; + Neon Postgres</td><td class="num">~$75</td><td class="ctr">&#10003;</td><td class="ctr">&#10003;</td><td class="note">Medium</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose" style="margin-top:16px">The trade is real, and it is operational rather than technical: <strong>you become the sysadmin.</strong> Everything below is about whether that trade is worth taking, and how to structure it so it stays reversible.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Method</p>
+    <h2>Think in capabilities, not providers</h2>
+    <p class="prose">The logical architecture does not change with the provider &mdash; the services and their connections are identical everywhere. What changes is whether a provider can satisfy each requirement.</p>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>#</th><th>Requirement</th><th>Needed by</th><th>If absent</th></tr></thead>
+        <tbody>
+          <tr><td class="proj st st-ok">R1</td><td class="note">Run long-lived containers</td><td class="note">Every service</td><td class="note">Disqualified &mdash; this is the whole stack</td></tr>
+          <tr><td class="proj st st-ok">R2</td><td class="note">PostgreSQL with RLS and backups</td><td class="note">Everything; also the job queue</td><td class="note">Bring managed Postgres</td></tr>
+          <tr><td class="proj st st-bad">R3</td><td class="note"><strong>Access to a Docker daemon</strong></td><td class="note">Trigger.dev supervisor, <em>if adopted</em></td><td class="note">Use <code>pg-boss</code> instead</td></tr>
+          <tr><td class="proj st st-bad">R4</td><td class="note"><strong><code>/dev/kvm</code></strong> &mdash; bare metal or nested virt</td><td class="note">E2B self-host, <em>if adopted</em></td><td class="note">E2B Cloud, or no sandbox</td></tr>
+          <tr><td class="proj st st-warn">R5</td><td class="note">Cheap or included egress</td><td class="note">Video upload to platforms</td><td class="note">Cost blowout</td></tr>
+          <tr><td class="proj st st-warn">R6</td><td class="note">Private networking between services</td><td class="note"><code>connector</code> must never be public</td><td class="note">Firewall discipline instead</td></tr>
+          <tr><td class="proj st st-warn">R7</td><td class="note">Stable egress IP</td><td class="note">Platform APIs that allowlist sources</td><td class="note">May force an outbound proxy</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tcap"><strong>R3 and R4 are what eliminated Railway.</strong> Any provider that gives you a real VM or bare metal satisfies both automatically, because you own the machine.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Figure 1 &mdash; provider fit</p>
+    <h2>Comparison</h2>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 1000 400" role="img" aria-label="Chart comparing hosting providers on monthly cost against capability. Railway is highest cost at around 200 to 250 dollars and lacks both Docker daemon and KVM access. Hetzner AX42 bare metal is lowest cost at 49 euros and has both capabilities. DigitalOcean and Fly.io sit in the middle with a Docker daemon but no KVM.">
+          <defs>
+            <marker id="ax" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- axes -->
+          <g style="color:var(--ink-3)">
+            <line class="ln" x1="90" y1="330" x2="950" y2="330" marker-end="url(#ax)"/>
+            <line class="ln" x1="90" y1="330" x2="90" y2="40" marker-end="url(#ax)"/>
+          </g>
+          <text class="zl" x="880" y="352">COST &rarr;</text>
+          <text class="zl" x="24" y="52">CAPABILITY</text>
+          <text class="s" x="24" y="68">&uarr;</text>
+
+          <!-- gridline labels -->
+          <text class="s" x="96" y="96">Docker daemon + KVM</text>
+          <text class="s" x="96" y="196">Docker daemon only</text>
+          <text class="s" x="96" y="296">Neither</text>
+          <g style="color:var(--rule-strong)">
+            <line x1="90" y1="106" x2="950" y2="106" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="90" y1="206" x2="950" y2="206" style="stroke:var(--rule); stroke-width:1"/>
+            <line x1="90" y1="306" x2="950" y2="306" style="stroke:var(--rule); stroke-width:1"/>
+          </g>
+
+          <!-- points: high capability row y=106 -->
+          <rect class="b-acc" x="150" y="120" width="190" height="54" rx="2"/>
+          <text class="t acc" x="245" y="141" text-anchor="middle">Hetzner AX42</text>
+          <text class="s acc" x="245" y="157" text-anchor="middle">bare metal &middot; 8c / 64 GB</text>
+          <text class="s acc" x="245" y="169" text-anchor="middle">&euro;49 &middot; 20 TB egress</text>
+          <circle cx="245" cy="106" r="5" fill="var(--accent)"/>
+
+          <rect class="b" x="360" y="120" width="170" height="54" rx="2"/>
+          <text class="t" x="445" y="141" text-anchor="middle">OVHcloud metal</text>
+          <text class="s" x="445" y="157" text-anchor="middle">EU sovereignty</text>
+          <text class="s" x="445" y="169" text-anchor="middle">generous egress</text>
+          <circle cx="445" cy="106" r="4.5" fill="var(--ink-2)"/>
+
+          <!-- mid row y=206 -->
+          <rect class="b" x="150" y="220" width="170" height="54" rx="2"/>
+          <text class="t" x="235" y="241" text-anchor="middle">Contabo VPS</text>
+          <text class="s" x="235" y="257" text-anchor="middle">~24 GB for ~&euro;14</text>
+          <text class="s" x="235" y="269" text-anchor="middle">KVM varies</text>
+          <circle cx="235" cy="206" r="4.5" fill="var(--ink-2)"/>
+
+          <rect class="b" x="340" y="220" width="170" height="54" rx="2"/>
+          <text class="t" x="425" y="241" text-anchor="middle">Hetzner CAX ARM</text>
+          <text class="s" x="425" y="257" text-anchor="middle">8 vCPU / 16 GB &euro;16</text>
+          <text class="s" x="425" y="269" text-anchor="middle">arm64 image risk</text>
+          <circle cx="425" cy="206" r="4.5" fill="var(--ink-2)"/>
+
+          <rect class="b" x="590" y="220" width="170" height="54" rx="2"/>
+          <text class="t" x="675" y="241" text-anchor="middle">DigitalOcean</text>
+          <text class="s" x="675" y="257" text-anchor="middle">managed PG included</text>
+          <text class="s" x="675" y="269" text-anchor="middle">4 TB egress</text>
+          <circle cx="675" cy="206" r="4.5" fill="var(--ink-2)"/>
+
+          <rect class="b" x="770" y="220" width="150" height="54" rx="2"/>
+          <text class="t" x="845" y="241" text-anchor="middle">Fly.io</text>
+          <text class="s" x="845" y="257" text-anchor="middle">many regions</text>
+          <text class="s" x="845" y="269" text-anchor="middle">low ops</text>
+          <circle cx="845" cy="206" r="4.5" fill="var(--ink-2)"/>
+
+          <!-- low row y=306 -->
+          <rect class="b" x="800" y="248" width="0" height="0"/>
+          <rect class="b" x="820" y="312" width="150" height="42" rx="2" style="stroke:var(--bad)"/>
+          <text class="t" x="895" y="331" text-anchor="middle" style="fill:var(--bad)">Railway</text>
+          <text class="s" x="895" y="346" text-anchor="middle" style="fill:var(--bad)">$200&ndash;250 &middot; $0.10/GB</text>
+          <circle cx="895" cy="306" r="5" fill="var(--bad)"/>
+
+          <text class="a" x="150" y="376">Up and left is better: more capability, less cost. The recommended box is the only one in the top-left quadrant.</text>
+        </svg>
+      </div>
+      <figcaption>Position on the vertical axis is capability, not quality &mdash; Railway is an excellent product, it simply cannot expose a Docker daemon or <code>/dev/kvm</code> by design. For this particular workload that design choice is disqualifying, and it happens to also be the most expensive option.</figcaption>
+    </figure>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Provider</th><th>Shape</th><th>v1 cost/mo</th><th>R3</th><th>R4</th><th>Egress</th><th>Ops</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="proj st st-ok">Hetzner AX42</td><td class="note">Bare metal, 8-core Ryzen, 64 GB, 2&times;512 GB NVMe RAID1</td><td class="num">&euro;49 +&euro;39 setup</td><td class="ctr">&#10003;</td><td class="ctr">&#10003;</td><td class="note">20 TB incl. (EU)</td><td class="note">High</td></tr>
+          <tr><td class="proj st st-ok">Hetzner CAX31 &times;2</td><td class="note">ARM cloud VM, 8 vCPU / 16 GB each</td><td class="num">~&euro;32</td><td class="ctr">&#10003;</td><td class="ctr">&#10007;</td><td class="note">20 TB incl. (EU)</td><td class="note">Medium</td></tr>
+          <tr><td class="proj st st-ok">OVHcloud</td><td class="note">VPS + cheap bare metal, EU sovereignty</td><td class="num">~$6.46 VPS-1</td><td class="ctr">&#10003;</td><td class="ctr">on metal</td><td class="note">Generous</td><td class="note">Medium</td></tr>
+          <tr><td class="proj st st-warn">Contabo</td><td class="note">RAM-per-euro leader &mdash; ~24 GB for ~&euro;14</td><td class="num">~&euro;14</td><td class="ctr">&#10003;</td><td class="ctr">varies</td><td class="note">Varies</td><td class="note">High</td></tr>
+          <tr><td class="proj st st-warn">DigitalOcean</td><td class="note">Droplets + managed PG + App Platform</td><td class="num">~$100&ndash;150</td><td class="ctr">droplets</td><td class="ctr">&#10007;</td><td class="note">4 TB</td><td class="note">Low&ndash;Med</td></tr>
+          <tr><td class="proj st st-warn">Fly.io</td><td class="note">Firecracker, many regions</td><td class="num">~$80&ndash;150</td><td class="ctr">&#8776;</td><td class="ctr">&#10007;</td><td class="note">Metered</td><td class="note">Low</td></tr>
+          <tr><td class="proj st st-bad">Railway</td><td class="note">Managed PaaS</td><td class="num">~$200&ndash;250</td><td class="ctr">&#10007;</td><td class="ctr">&#10007;</td><td class="note">$0.10/GB</td><td class="note">Lowest</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Hetzner's 2026 price rises &mdash; read before assuming</h3>
+    <div class="prose">
+      <p>Hetzner raised cloud prices <strong>three times in 2026</strong>, and the increases were not uniform:</p>
+      <ul>
+        <li><strong>April 2026</strong> &mdash; broad rise of up to ~37&ndash;43%, applied to existing customers too.</li>
+        <li><strong>15 June 2026</strong> &mdash; CPX and CCX hit hard: <strong>CPX22 &euro;7.99 &rarr; &euro;19.49 (+144%)</strong>, <strong>CCX13 &euro;15.99 &rarr; &euro;42.99 (+169%)</strong>.</li>
+        <li><strong>CAX (ARM) rose only ~30&ndash;33%</strong> and remains the cheapest cloud line.</li>
+        <li>Dedicated (AX) was far less affected &mdash; <strong>AX42 is &euro;49/month + &euro;39 one-off setup</strong>.</li>
+      </ul>
+      <p>Two practical consequences. <strong>Do not build a cost model on CPX/CCX</strong> &mdash; they are no longer the value play; CAX or AX are. And <strong>existing servers keep their price, but a rescale counts as a new order</strong> at current rates, so size with headroom rather than planning to resize.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Figure 2 &mdash; placement</p>
+    <h2>Same services, three stages of placement</h2>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 1000 330" role="img" aria-label="Three placement stages. Stage one runs all nine services on a single Hetzner AX42 box managed by Coolify at about 50 euros a month. Stage two moves Postgres to managed Neon at about 75 dollars. Stage three splits into an app box, a worker box and a bare-metal sandbox box with KVM at 150 to 200 dollars.">
+          <defs>
+            <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- stage 1 -->
+          <rect class="b-acc" x="16" y="40" width="290" height="210" rx="3"/>
+          <text class="zl acc" x="30" y="64">STAGE 1 &mdash; V1 LAUNCH</text>
+          <rect class="b" x="32" y="76" width="258" height="40" rx="2"/>
+          <text class="t" x="161" y="93" text-anchor="middle">Hetzner AX42 &mdash; one box</text>
+          <text class="s" x="161" y="108" text-anchor="middle">8 cores &middot; 64 GB &middot; NVMe RAID1</text>
+          <rect class="b" x="32" y="124" width="258" height="76" rx="2"/>
+          <text class="s" x="161" y="142" text-anchor="middle">Coolify manages every container</text>
+          <text class="s" x="161" y="160" text-anchor="middle">web &middot; api &middot; connector &middot; worker</text>
+          <text class="s" x="161" y="174" text-anchor="middle">browser-worker &middot; litellm &middot; langfuse</text>
+          <text class="s" x="161" y="188" text-anchor="middle">Postgres &middot; Valkey</text>
+          <text class="t acc" x="161" y="228" text-anchor="middle">~&euro;50 / month</text>
+
+          <g style="color:var(--ink-2)">
+            <line class="ln" x1="308" y1="145" x2="344" y2="145" marker-end="url(#a4)"/>
+          </g>
+          <text class="a" x="326" y="132" text-anchor="middle">backups</text>
+          <text class="a" x="326" y="168" text-anchor="middle">become a risk</text>
+
+          <!-- stage 2 -->
+          <rect class="b" x="346" y="40" width="290" height="210" rx="3"/>
+          <text class="zl" x="360" y="64">STAGE 2 &mdash; DE-RISK THE DATA</text>
+          <rect class="b" x="362" y="76" width="258" height="40" rx="2"/>
+          <text class="t" x="491" y="93" text-anchor="middle">Same box for compute</text>
+          <text class="s" x="491" y="108" text-anchor="middle">eight services, unchanged</text>
+          <rect class="b" x="362" y="124" width="258" height="76" rx="2"/>
+          <text class="t" x="491" y="147" text-anchor="middle">Postgres &rarr; Neon</text>
+          <text class="s" x="491" y="166" text-anchor="middle">PITR &middot; branching &middot; managed backups</text>
+          <text class="s" x="491" y="182" text-anchor="middle">scale-to-zero billing</text>
+          <text class="t" x="491" y="228" text-anchor="middle">~$75 / month</text>
+
+          <g style="color:var(--ink-2)">
+            <line class="ln" x1="638" y1="145" x2="674" y2="145" marker-end="url(#a4)"/>
+          </g>
+          <text class="a" x="656" y="132" text-anchor="middle">box saturates</text>
+          <text class="a" x="656" y="168" text-anchor="middle">or agent runs code</text>
+
+          <!-- stage 3 -->
+          <rect class="b" x="676" y="40" width="308" height="210" rx="3"/>
+          <text class="zl" x="690" y="64">STAGE 3 &mdash; SPLIT THE PLANES</text>
+          <rect class="b" x="692" y="76" width="276" height="40" rx="2"/>
+          <text class="t" x="830" y="93" text-anchor="middle">App box + worker box</text>
+          <text class="s" x="830" y="108" text-anchor="middle">scale independently</text>
+          <rect class="b" x="692" y="124" width="276" height="76" rx="2"/>
+          <text class="t" x="830" y="147" text-anchor="middle">Sandbox box &mdash; bare metal, KVM</text>
+          <text class="s" x="830" y="166" text-anchor="middle">E2B self-host now possible</text>
+          <text class="s" x="830" y="182" text-anchor="middle">Trigger.dev self-host now possible</text>
+          <text class="t" x="830" y="228" text-anchor="middle">~$150&ndash;200 / month</text>
+
+          <text class="a" x="16" y="284">The service list never changes. Only which physical machine each container lands on, and who operates the database.</text>
+          <text class="a" x="16" y="304">Because everything is OCI containers plus Postgres plus Valkey, moving between stages is a compose file and a restore &mdash; not a rewrite.</text>
+        </svg>
+      </div>
+      <figcaption>A single AX42 has 8 real cores and 64 GB of RAM. The entire v1 service list &mdash; nine containers &mdash; fits with room to spare; the Railway sizing totalled 5 vCPU and 10 GB across all services for ~$200. You are not compromising on capacity, you are trading managed operations for roughly a quarter of the cost.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <p class="eyebrow">Figure 3 &mdash; the decision</p>
+    <h2>Choosing a provider</h2>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 1000 420" role="img" aria-label="Decision tree. First question: can you carry sysadmin duty? If no, use a managed PaaS and accept four times the cost plus permanent pg-boss and E2B Cloud. If yes, ask where users are. EU-centric leads to Hetzner AX42 with Coolify. US or India heavy leads to an in-region provider. Then ask whether you are comfortable owning Postgres backups; if not, add Neon.">
+          <defs>
+            <marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- Q1 -->
+          <rect class="b" x="380" y="20" width="240" height="46" rx="2"/>
+          <text class="t" x="500" y="41" text-anchor="middle">Can you carry sysadmin duty?</text>
+          <text class="s" x="500" y="57" text-anchor="middle">patching &middot; monitoring &middot; incidents</text>
+
+          <g style="color:var(--ink-2)">
+            <path class="ln" d="M 380 43 L 200 43 L 200 96" marker-end="url(#a5)"/>
+            <line class="ln" x1="500" y1="66" x2="500" y2="96" marker-end="url(#a5)"/>
+          </g>
+          <text class="a" x="270" y="36">no</text>
+          <text class="a" x="508" y="86">yes</text>
+
+          <!-- managed outcome -->
+          <rect class="b" x="60" y="98" width="280" height="66" rx="2" style="stroke:var(--warn)"/>
+          <text class="t" x="200" y="120" text-anchor="middle" style="fill:var(--warn)">Managed PaaS</text>
+          <text class="s" x="200" y="137" text-anchor="middle" style="fill:var(--warn)">Railway / Render / DO App Platform</text>
+          <text class="s" x="200" y="152" text-anchor="middle" style="fill:var(--warn)">~4&times; cost &middot; pg-boss + E2B Cloud forever</text>
+
+          <!-- Q2 -->
+          <rect class="b" x="380" y="98" width="240" height="46" rx="2"/>
+          <text class="t" x="500" y="119" text-anchor="middle">Where are your users?</text>
+          <text class="s" x="500" y="135" text-anchor="middle">latency &amp; data residency</text>
+
+          <g style="color:var(--ink-2)">
+            <path class="ln" d="M 620 121 L 800 121 L 800 176" marker-end="url(#a5)"/>
+            <line class="ln" x1="500" y1="144" x2="500" y2="176" marker-end="url(#a5)"/>
+          </g>
+          <text class="a" x="668" y="114">US / India heavy</text>
+          <text class="a" x="508" y="166">EU-centric</text>
+
+          <rect class="b" x="672" y="178" width="256" height="62" rx="2"/>
+          <text class="t" x="800" y="200" text-anchor="middle">In-region provider</text>
+          <text class="s" x="800" y="217" text-anchor="middle">OVHcloud or DigitalOcean</text>
+          <text class="s" x="800" y="231" text-anchor="middle">or Hetzner + CDN, 100&ndash;250ms API</text>
+
+          <!-- recommended -->
+          <rect class="b-acc" x="352" y="178" width="296" height="66" rx="2"/>
+          <text class="t acc" x="500" y="200" text-anchor="middle">Hetzner AX42 + Coolify</text>
+          <text class="s acc" x="500" y="217" text-anchor="middle">RECOMMENDED FOR V1</text>
+          <text class="s acc" x="500" y="232" text-anchor="middle">KVM already present &mdash; E2B later on same box</text>
+
+          <g style="color:var(--accent)">
+            <line class="ln-acc" x1="500" y1="244" x2="500" y2="276" marker-end="url(#a5)"/>
+          </g>
+
+          <!-- Q3 -->
+          <rect class="b" x="368" y="278" width="264" height="46" rx="2"/>
+          <text class="t" x="500" y="299" text-anchor="middle">Comfortable owning backups?</text>
+          <text class="s" x="500" y="315" text-anchor="middle">dumps, retention, restore drills</text>
+
+          <g style="color:var(--ink-2)">
+            <path class="ln" d="M 368 301 L 250 301 L 250 348" marker-end="url(#a5)"/>
+            <path class="ln" d="M 632 301 L 750 301 L 750 348" marker-end="url(#a5)"/>
+          </g>
+          <text class="a" x="292" y="294">no</text>
+          <text class="a" x="686" y="294">yes</text>
+
+          <rect class="b-acc" x="110" y="350" width="280" height="52" rx="2"/>
+          <text class="t acc" x="250" y="371" text-anchor="middle">Add Neon Launch &mdash; $19/mo</text>
+          <text class="s acc" x="250" y="388" text-anchor="middle">PITR + branching &middot; scale-to-zero</text>
+
+          <rect class="b" x="610" y="350" width="280" height="52" rx="2"/>
+          <text class="t" x="750" y="371" text-anchor="middle">Self-managed Postgres</text>
+          <text class="s" x="750" y="388" text-anchor="middle">dumps to R2/B2 &middot; test restore monthly</text>
+        </svg>
+      </div>
+      <figcaption>The first question is the one that actually decides it, and it is about your team rather than your architecture. Choosing managed hosting because you cannot staff operations is a legitimate answer &mdash; the point of the audit is to know what the premium buys, not to assume cheapest wins.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <p class="eyebrow">Cost</p>
+    <h2>What v1 actually costs</h2>
+    <h3>Recommended: Hetzner AX42 + Coolify + Neon</h3>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Item</th><th>Cost/month</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="proj">Hetzner AX42</td><td class="num">&euro;49 (~$53)</td><td class="note">8-core Ryzen 7 PRO 8700GE, 64 GB, 2&times;512 GB NVMe RAID1. One-off &euro;39 setup.</td></tr>
+          <tr><td class="proj">Coolify</td><td class="num">&euro;0</td><td class="note">Apache-2.0, self-hosted. Railway-like deploys on your own box.</td></tr>
+          <tr><td class="proj">Neon Launch</td><td class="num">$19</td><td class="note">Compute $0.106/CU-hour, storage $0.35/GB-month, scale-to-zero, no monthly minimum since Dec 2025.</td></tr>
+          <tr><td class="proj">Cloudflare R2</td><td class="num">~$1&ndash;5</td><td class="note">Media. Zero egress fee.</td></tr>
+          <tr><td class="proj">Egress</td><td class="num">&euro;0</td><td class="note">20 TB included in EU regions.</td></tr>
+        </tbody>
+        <tfoot><tr><td>Total</td><td class="num">~$75</td><td class="note">vs ~$200&ndash;250 on Railway, with ~8&times; the RAM.</td></tr></tfoot>
+      </table>
+    </div>
+    <p class="tcap"><strong>Cheapest viable:</strong> drop Neon and self-manage Postgres on the same box &mdash; <strong>~$55/month</strong>. Only do this if you will genuinely automate off-box backups <em>and test restores</em>. An untested backup is not a backup.</p>
+
+    <h3>Egress is the sleeper cost</h3>
+    <p class="prose">A product that uploads video is egress-heavy by nature. <strong>1 TB/month costs $100 on Railway and &euro;0 on Hetzner.</strong> Over a year that single difference exceeds the entire Hetzner bill. The per-user costs &mdash; $0.015 per X post, $0.20 with a link, plus tokens and image generation &mdash; are unchanged by provider and are covered in the deployment document.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Risk</p>
+    <h2>What you take on</h2>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+        <tbody>
+          <tr><td class="proj st st-warn">You are the sysadmin</td><td class="note">OS patching, Docker upgrades, TLS renewal, monitoring, 3am incidents. Coolify automates deploys, TLS and rollbacks. Budget a day of setup and a few hours a month.</td></tr>
+          <tr><td class="proj st st-bad">Single point of failure</td><td class="note">RAID1 survives a disk; it does not survive a motherboard or a datacentre incident. Accept for v1, keep infrastructure-as-code so a rebuild is hours not days, and move to Stage 3 before uptime becomes revenue-critical.</td></tr>
+          <tr><td class="proj st st-bad">Backups are yours</td><td class="note">Managed Postgres is the clean answer. Otherwise automated off-box dumps and a <strong>restore test every month</strong>.</td></tr>
+          <tr><td class="proj st st-warn">EU location, global users</td><td class="note">100&ndash;250ms to US/India. Cloudflare fronts static assets but API calls still cross. <strong>If India is the primary market this is the strongest argument against Hetzner.</strong></td></tr>
+          <tr><td class="proj st st-warn">Prices moved 3&times; in 2026</td><td class="note">Bare metal was least affected. Do not assume today's rate holds; re-check annually.</td></tr>
+          <tr><td class="proj st st-warn">No managed anything</td><td class="note">No one-click read replicas, autoscaling or PITR. You do not need these at v1 &mdash; but know the point at which you will.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Principle</p>
+    <h2>The rule that keeps this reversible</h2>
+    <div class="prose">
+      <p><strong>Depend on no provider-specific primitive.</strong> Everything in this stack is OCI containers plus PostgreSQL plus Valkey &mdash; nothing else. That means:</p>
+      <ul>
+        <li>No Railway-specific networking, no Vercel-only rendering features, no AWS Lambda handlers, no proprietary queue service.</li>
+        <li>The deployment is a Docker Compose file plus environment variables. Moving providers means bringing up the same compose file elsewhere and restoring the database.</li>
+        <li>Coolify is Apache-2.0 and only a control plane &mdash; if you abandon it, the containers keep running.</li>
+      </ul>
+      <p>This is the practical meaning of <em>deployment-first</em>: the architecture must not encode where it runs. Get that right and the provider decision stops being permanent &mdash; which matters more than getting it perfect now, given how much European hosting repriced this year.</p>
+
+      <h3>Recommendation</h3>
+      <p><strong>Start on one Hetzner AX42 with Coolify and Neon Postgres, at roughly $75/month.</strong> About a third of the Railway cost, removes both capability blockers, includes 20 TB of egress, and keeps every future option open &mdash; including self-hosting E2B on the very same machine, since bare metal already provides KVM.</p>
+      <p>Revisit if <strong>India or the US becomes the primary market</strong> (latency argues for in-region), if <strong>revenue starts depending on uptime</strong> (move to Stage 3, or buy managed hosting as insurance), or if <strong>you cannot staff the sysadmin duty</strong> (go back to managed and treat the extra ~$150/month as operational cover).</p>
+    </div>
+  </section>
+
+  <p class="foot">Sources: <a href="https://docs.hetzner.com/general/infrastructure-and-availability/price-adjustment/">Hetzner June 2026 price adjustment</a>, <a href="https://www.hetzner.com/dedicated-rootserver/ax42/">Hetzner AX42</a>, <a href="https://northflank.com/blog/hetzner-cloud-server-price-increases">2026 increases analysed</a>, <a href="https://introserv.com/blog/dokploy-vs-coolify-complete-comparison-of-the-best-self-hosted-paas-platforms-for-vps-and-dedicated-servers-2026/">Coolify vs Dokploy</a>, <a href="https://vela.simplyblock.io/articles/neon-serverless-postgres-pricing-2026/">Neon pricing 2026</a>, <a href="https://docs.railway.com/pricing/plans">Railway pricing</a>. Costs are estimates from published rates on 12 August 2026, not vendor quotes &mdash; European hosting repriced substantially through 2026, so verify before budgeting.</p>
+
+</div>
+</body>
+</html>
